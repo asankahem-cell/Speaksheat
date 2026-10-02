@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: speaksheet
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # leave BLANK so each visitor uses (and pays with) their own key
+      - key: ACCESS_CODE
+        sync: false   # only used when ANTHROPIC_API_KEY is set
+      - key: HOURLY_LIMIT
+        value: "30"
