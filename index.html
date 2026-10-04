@@ -1,0 +1,1469 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Speaksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar with six tabs (Folders, Overview, Enter scores, Prep, Timer, Speakers); tab-sheet tables with mono numerals as the main visual. */
+:root{
+  --bg:#f2f4f8; --surface:#ffffff; --surface-2:#e9edf4; --line:#d5dbe6; --fg:#101a33; --muted:#5a6580;
+  --accent:#2447e0; --accent-fg:#ffffff; --accent-soft:#e3e9ff;
+  --good:#127a4b; --good-soft:#dcf3e8; --warn:#9a5b00; --warn-soft:#fbecd0; --bad:#b3261e; --bad-soft:#fbe2df;
+  --s0:#2447e0; --s1:#d1610a; --s2:#0d8a7a; --s3:#b0257e; --s4:#8a7300; --s5:#6b3fd1;
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1324; --surface:#151d33; --surface-2:#1d2742; --line:#2a3555; --fg:#e8ecf7; --muted:#95a1c0;
+  --accent:#7d97ff; --accent-fg:#0d1324; --accent-soft:#222e5c;
+  --good:#4fd08f; --good-soft:#123a2b; --warn:#f0b24d; --warn-soft:#3d2f10; --bad:#ff8a80; --bad-soft:#40201e;
+  --s0:#7d97ff; --s1:#ff9a52; --s2:#3fd0bd; --s3:#ff7cc6; --s4:#e0c447; --s5:#b39bff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1324; --surface:#151d33; --surface-2:#1d2742; --line:#2a3555; --fg:#e8ecf7; --muted:#95a1c0;
+  --accent:#7d97ff; --accent-fg:#0d1324; --accent-soft:#222e5c;
+  --good:#4fd08f; --good-soft:#123a2b; --warn:#f0b24d; --warn-soft:#3d2f10; --bad:#ff8a80; --bad-soft:#40201e;
+  --s0:#7d97ff; --s1:#ff9a52; --s2:#3fd0bd; --s3:#ff7cc6; --s4:#e0c447; --s5:#b39bff; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1080px;margin-inline:auto}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px}
+.bar-in{max-width:1080px;margin-inline:auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.brand{font:700 22px/1 var(--f-display);letter-spacing:-.02em;margin-right:auto;min-width:0}
+.brand small{display:block;font:500 11px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw}
+.tabs{display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:9px;max-width:100%;overflow-x:auto}
+.tab{border:0;background:transparent;padding:7px 14px;border-radius:7px;cursor:pointer;font-weight:500;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.seg{display:flex;align-items:center;gap:8px;font:500 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.seg .tabs .tab{padding:5px 10px;font-size:13px}
+
+h1,h2,h3{font-family:var(--f-display);letter-spacing:-.015em;text-wrap:balance;margin:0}
+h2{font-size:22px;line-height:1.2}
+h3{font-size:16px}
+main{padding-block:24px;display:flex;flex-direction:column;gap:28px}
+.sec{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.sec-head p{margin:0;color:var(--muted);font-size:13.5px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.scroll{overflow-x:auto}
+
+table{border-collapse:collapse;width:100%}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.big{font:600 20px var(--f-mono);font-variant-numeric:tabular-nums}
+.name{font:600 15px var(--f-display)}
+.plink{font:600 15px var(--f-display);color:var(--accent);text-decoration:none}
+.plink:hover{text-decoration:underline}
+.plink .out{font-size:11px;margin-left:4px;vertical-align:1px;opacity:.75}
+a.inline{color:var(--accent);word-break:break-all}
+a.btn{display:inline-block;text-decoration:none}
+.clock{font:600 clamp(56px,16vw,120px)/1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;display:block;padding:4px 0}
+.clock.over{color:var(--bad)}
+.clock.ring{color:var(--accent)}
+.tstate{text-align:center;font:500 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-height:1.4em}
+.tstate.open{color:var(--good)}
+.tstate.shut{color:var(--warn)}
+.tstate.over{color:var(--bad)}
+.track{position:relative;height:14px;background:var(--surface-2);border-radius:7px;overflow:hidden;margin:14px 0 6px}
+.track .prot{position:absolute;top:0;bottom:0;background:var(--warn-soft)}
+.track .fill{position:absolute;top:0;bottom:0;left:0;background:var(--accent);border-radius:7px}
+.track .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--fg);opacity:.45}
+.tlabels{position:relative;height:32px;font:11px var(--f-mono);color:var(--muted)}
+.tlabels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.tlabels span.cont{top:16px}
+.tbig{padding:18px 16px 14px}
+.tbtn{font-size:16px;padding:12px 26px}
+.out-text{white-space:pre-wrap;font:14.5px/1.65 var(--f-body);min-height:1.6em}
+textarea.motion{width:100%;min-height:62px;font:15px/1.5 var(--f-body);resize:vertical}
+a.go2{font-size:12.5px;font-weight:500;text-decoration:none;word-break:normal;margin-left:8px}
+a.go2:hover{text-decoration:underline}
+a.go2 .out{font-size:10px;margin-left:3px;opacity:.75}
+a.go{margin-left:auto;white-space:nowrap;font-weight:500;font-size:13.5px;text-decoration:none;word-break:normal}
+a.go:hover{text-decoration:underline}
+a.go .out{font-size:11px;margin-left:4px;vertical-align:1px;opacity:.75}
+.sub2{display:block;font:400 12px var(--f-body);color:var(--muted)}
+.sub3{display:block;font:400 11.5px var(--f-mono);color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:baseline}
+.sq{border-radius:2px}
+.rank{font:600 13px var(--f-mono);display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:6px;background:var(--surface-2)}
+.rank.r1{background:var(--accent);color:var(--accent-fg)}
+.pill{font:500 12px var(--f-body);padding:2px 9px;border-radius:99px;display:inline-block}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.flat{background:var(--surface-2);color:var(--muted)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.bar-track{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden;min-width:90px}
+.bar-fill{height:100%;background:var(--accent);border-radius:4px}
+.muted{color:var(--muted)}
+.dash{color:var(--muted)}
+.pos{color:var(--good)}
+.neg{color:var(--bad)}
+
+.chart-box{padding:14px 16px 8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;margin-bottom:6px;align-items:center}
+svg text{font-family:var(--f-mono);fill:var(--muted);font-size:11px}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .sep{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+svg .tname{fill:var(--fg);font-family:var(--f-display);font-weight:600;font-size:12px}
+svg .band{fill:var(--surface-2)}
+svg .bandlab{font-size:10px;letter-spacing:.08em}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip.add{border-style:dashed;color:var(--accent);background:transparent}
+.grid-in{width:100%;min-width:86px;max-width:110px;text-align:right;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:500 16px var(--f-mono);font-variant-numeric:tabular-nums}
+.grid-in.inv{border-color:var(--bad);background:var(--bad-soft)}
+.grid-in.odd{border-color:var(--warn)}
+.grid-in.ab{color:var(--muted);background:var(--surface-2)}
+.lbl{width:100%;min-width:140px;border:1px solid transparent;background:transparent;padding:8px 6px;border-radius:6px;font-weight:500}
+.lbl:hover{border-color:var(--line)}
+.rowbtn{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:5px 7px;border-radius:6px;font-size:16px;line-height:1}
+.rowbtn:hover{color:var(--fg);background:var(--surface-2)}
+.rowbtn.x:hover{color:var(--bad);background:var(--bad-soft)}
+.rowbtn.on{color:var(--accent);background:var(--accent-soft)}
+.rowbtn[disabled]{opacity:.25;cursor:default}
+.rowbtn[disabled]:hover{background:transparent;color:var(--muted)}
+.acts{display:flex;gap:2px;justify-content:flex-end}
+tr.sum td{background:var(--surface-2);font-weight:600}
+tr.shdr th{background:var(--bg);color:var(--fg);font:600 11.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding-top:14px}
+tr.shdr th span{color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;font-family:var(--f-body);font-size:12.5px;margin-left:8px}
+tr.sub th{background:transparent;border-bottom:1px solid var(--line)}
+tr.rep td{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
+tr.rep .rlab{color:var(--muted);font-size:13.5px;padding-left:22px}
+tr.det td{background:var(--surface-2);white-space:normal}
+.detg{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px 12px}
+.detg .wide{grid-column:1/-1}
+.fl{display:block;font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fl>input,.fl>select{display:block;width:100%;margin-top:4px;font:400 14.5px var(--f-body);letter-spacing:0;text-transform:none;color:var(--fg);border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 9px}
+.chk{display:flex;align-items:center;gap:8px;align-self:end;padding-bottom:7px;font-size:14px}
+.motionq{font-style:italic;color:var(--muted);font-size:13px;max-width:420px;white-space:normal;display:block;margin-top:3px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.danger.armed{background:var(--bad);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:8px 10px;min-width:0}
+textarea.field{width:100%;min-height:110px;font:12px/1.4 var(--f-mono);resize:vertical}
+.split{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:760px){.split{grid-template-columns:1fr 1fr}}
+.pad{padding:16px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.empty b{color:var(--fg)}
+
+.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.folder{padding:16px;display:flex;flex-direction:column;gap:12px}
+.folder.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.folder .f-name{font:600 17px var(--f-display);width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;margin-left:-6px;border-radius:6px}
+.folder .f-name:hover{border-color:var(--line)}
+.f-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.kind{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kind label{border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;background:var(--bg)}
+.kind label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.kind small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+[hidden]{display:none!important}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <div class="brand">Speaksheet<small id="ctx">Debate tab scores</small></div>
+  <div class="tabs" role="tablist" id="nav">
+    <button class="tab" role="tab" data-v="folders">Folders</button>
+    <button class="tab" role="tab" data-v="overview">Overview</button>
+    <button class="tab" role="tab" data-v="entry">Enter scores</button>
+    <button class="tab" role="tab" data-v="prep">Prep</button>
+    <button class="tab" role="tab" data-v="timer">Timer</button>
+    <button class="tab" role="tab" data-v="speakers">Speakers</button>
+  </div>
+  <div class="seg">Scale
+    <div class="tabs" id="scaleSw">
+      <button class="tab" data-s="old" title="Old scale, 70 is average">Old</button>
+      <button class="tab" data-s="new" title="New scale, 60 is average">New</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="wrap"><main>
+  <section id="v-folders" class="sec"></section>
+  <section id="v-overview" class="sec" hidden></section>
+  <section id="v-entry" class="sec" hidden></section>
+  <section id="v-prep" class="sec" hidden></section>
+  <section id="v-timer" class="sec" hidden></section>
+  <section id="v-speakers" class="sec" hidden></section>
+</main></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var KEY="speaksheet.v2", COLORS=6;
+  var VIEWS=["folders","overview","entry","prep","timer","speakers"];
+  var uid=function(){return Math.random().toString(36).slice(2,9)};
+  var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]})};
+  var $=function(id){return document.getElementById(id)};
+
+  /* Break rounds a tab can have. Pick any of them, in any order, as many as the break actually ran. */
+  var BREAKS=[
+    ["Partial Double Octofinals","PDO"],["Double Octofinals","DOF"],
+    ["Partial Octofinals","POF"],["Octofinals","Octos"],
+    ["Partial Quarterfinals","PQF"],["Quarterfinals","Quarters"],
+    ["Partial Semifinals","PSF"],["Semifinals","Semis"],
+    ["Final","Final"],["Grand Final","Grand F"],
+    ["EFL Semifinals","EFL SF"],["EFL Final","EFL F"],
+    ["ESL Semifinals","ESL SF"],["ESL Final","ESL F"],
+    ["Novice Semifinals","Nov SF"],["Novice Final","Nov F"],
+    ["Pre-Octofinals","Pre-Octos"],["Third Place Playoff","3rd place"]
+  ];
+  var GROUPS={prelim:0,"break":1,spar:2};
+
+  /* A position is the speaking slot inside the team; the side says which bench, so 1st on Government is the PM. */
+  var FORMATS={
+    ap:{name:"Asian Parliamentary, 3 on 3",n:3,reply:true,
+      sides:[["gov","Government"],["opp","Opposition"]],results:[["w","Won"],["l","Lost"]]},
+    wsdc:{name:"World Schools, 3 on 3",n:3,reply:true,
+      sides:[["prop","Proposition"],["opp","Opposition"]],results:[["w","Won"],["l","Lost"]]},
+    bp:{name:"British Parliamentary, 2 on 2",n:2,reply:false,
+      sides:[["og","Opening Gov"],["oo","Opening Opp"],["cg","Closing Gov"],["co","Closing Opp"]],
+      results:[["1","1st"],["2","2nd"],["3","3rd"],["4","4th"]]},
+    other:{name:"Other format",n:3,reply:true,
+      sides:[["gov","Government"],["opp","Opposition"]],results:[["w","Won"],["l","Lost"]]}
+  };
+  var SIDEL={gov:"Government",opp:"Opposition",prop:"Proposition",og:"Opening Gov",oo:"Opening Opp",cg:"Closing Gov",co:"Closing Opp"};
+  var POSL={"1":"1st speaker","2":"2nd speaker","3":"3rd speaker"};
+  var TAGS=["Economics","International relations","Politics","Law and justice","Gender","Education","Environment",
+    "Science and technology","Media","Development","Health","Religion","Philosophy","Social movements",
+    "War and conflict","Arts and culture","Sport","Family","Criminal justice","Free speech"];
+
+  /* ---------- state: folders, each with its own speakers and tournaments ---------- */
+  var S=load(),openDet={};
+  function load(){
+    try{var t=localStorage.getItem(KEY);if(t){var o=JSON.parse(t);if(o&&Array.isArray(o.ws)){migrate(o);return o}}}catch(e){}
+    return{v:4,scale:"old",view:"folders",curWs:null,ws:[]};
+  }
+  function migrate(o){
+    o.ws.forEach(function(w){(w.tournaments||[]).forEach(function(t){fixT(t)})});
+    o.v=4;
+  }
+  function fixT(t){
+    if(!t.format)t.format="ap";
+    (t.rounds||[]).forEach(function(r){
+      if(!r.stage)r.stage=/spar/i.test(r.label||"")?"spar":"prelim";
+      if(!r.pos)r.pos={};
+      if(!r.replies)r.replies={};
+    });
+  }
+  /* ---------- storage: folders on this device, plus shared folders kept with the page ---------- */
+  var DB=null,USER=null,canWrite=null,SH=[],subs={},dirtyF={},dirtyT={},wq={},chain={},lastB={},pend=false,dbPending=true;
+  var freshF={},freshT={}; /* created here and not yet confirmed by the store, so a snapshot must not drop them */
+  var SAMPLE=null,sampleDead=false,pmBusy=false,pmCtl=null,pmText="",pmNote="";
+  var API=false,API_CODE=false,API_BYOK=false,CODE_KEY="speaksheet.code",UKEY="speaksheet.apikey"; /* our own server's Claude, when the page is hosted there */
+  var prep={},dirtyP={}; /* prep doc links live apart from the scores so the team can set them without scoring rights */
+  function prepKey(w,t){return w.id+"/"+t.id}
+  function prepUrl(w,t){return w._sh?(prep[prepKey(w,t)]||""):(t.docUrl||"")}
+  function savePrep(w,t,url){
+    var key=prepKey(w,t);prep[key]=url;
+    if(!w._sh){t.docUrl=url;persist();return}
+    if(!DB)return;
+    dirtyP[key]=true;clearTimeout(wq["p"+key]);
+    wq["p"+key]=setTimeout(function(){
+      put("prep/"+w.id+"/docs/"+t.id,{url:url}).then(function(){dirtyP[key]=false},
+        function(e){dirtyP[key]=false;toast(e&&e.code==="invalid_argument"?"You cannot change prep links here":"Could not save the prep link")})},500);
+  }
+  function subPrep(w){
+    if(!DB||!w._sh||subs["p"+w.id])return;
+    subs["p"+w.id]=DB.collection("prep/"+w.id+"/docs").onSnapshot(function(snap){
+      var seen={};
+      snap.docs.forEach(function(d){
+        seen[d.id]=1;var x=d.data()||{},k=w.id+"/"+d.id;
+        if(!dirtyP[k]){prep[k]=typeof x.url==="string"?x.url:"";lastB["prep/"+w.id+"/docs/"+d.id]=JSON.stringify({url:prep[k]})}
+      });
+      Object.keys(prep).forEach(function(k){
+        if(k.indexOf(w.id+"/")===0&&!seen[k.slice(w.id.length+1)]&&!dirtyP[k])delete prep[k]});
+      rerender();
+    },function(){});
+  }
+  var saveT;
+  function persist(){clearTimeout(saveT);saveT=setTimeout(function(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},150)}
+  function save(){persist();syncOpen()}
+  function FL(){return SH.concat(S.ws)}
+  function W(){return FL().filter(function(x){return x.id===S.curWs})[0]||null}
+  function ro(){var w=W();return !!(w&&w._sh&&canWrite===false)}
+  function dis(){return ro()?" disabled":""}
+
+  function tBody(t){return{name:t.name||"",format:t.format||"ap",teamRank:t.teamRank||{},teamPos:t.teamPos||"",
+    tabAvg:(typeof t.tabAvg==="number"?t.tabAvg:null),fieldSize:t.fieldSize||null,
+    rounds:t.rounds||[],ord:t.ord||Date.now()}}
+  function fBody(w){return{name:w.name||"",kind:w.kind==="solo"?"solo":"team",speakers:w.speakers||[],
+    tcount:(w.tournaments||[]).length,ord:w.ord||Date.now()}}
+  function put(path,body){ /* one write at a time per document, and never the same body twice */
+    if(!DB)return Promise.resolve();
+    var s=JSON.stringify(body);if(lastB[path]===s)return Promise.resolve();
+    lastB[path]=s;
+    var go=function(){return DB.doc(path).set(body)},prev=chain[path]||Promise.resolve();
+    var p=prev.then(go,go);chain[path]=p.catch(function(){});
+    return p.catch(function(e){delete lastB[path];throw e});
+  }
+  function dbErr(e){
+    var c=e&&e.code;
+    if(c==="invalid_argument"&&canWrite!==true){canWrite=false;toast("You can read this folder but not change it");rerender();return}
+    if(c==="quota_exceeded"){toast("The shared store is full");return}
+    if(c==="revoked"){toast("Access to the shared folders changed");return}
+    toast("Could not save to the shared folder");
+  }
+  function syncF(w,now){
+    if(!DB||!w||!w._sh)return;
+    dirtyF[w.id]=true;clearTimeout(wq["f"+w.id]);
+    wq["f"+w.id]=setTimeout(function(){
+      put("folders/"+w.id,fBody(w)).then(function(){dirtyF[w.id]=false;delete freshF[w.id]},
+        function(e){dirtyF[w.id]=false;dbErr(e)})},now?0:500);
+  }
+  function syncT(w,t,now){
+    if(!DB||!w||!w._sh||!t)return;
+    dirtyT[t.id]=true;clearTimeout(wq[t.id]);
+    wq[t.id]=setTimeout(function(){
+      put("folders/"+w.id+"/tournaments/"+t.id,tBody(t)).then(function(){dirtyT[t.id]=false;delete freshT[t.id]},
+        function(e){dirtyT[t.id]=false;dbErr(e)})},now?0:500);
+  }
+  function syncOpen(){
+    var w=W();if(!w||!w._sh)return;
+    syncF(w);
+    var t=(w.tournaments||[]).filter(function(x){return x.id===w.cur})[0];
+    if(t)syncT(w,t);
+  }
+  function dropT(w,t){
+    if(!DB||!w._sh)return;
+    delete lastB["folders/"+w.id+"/tournaments/"+t.id];
+    DB.doc("folders/"+w.id+"/tournaments/"+t.id).delete().then(function(){syncF(w)},dbErr);
+  }
+  function dropF(w){
+    if(!DB||!w._sh)return;
+    var base="folders/"+w.id+"/tournaments/";
+    var ids=w.loaded?Promise.resolve(w.tournaments.map(function(t){return t.id}))
+      :DB.collection("folders/"+w.id+"/tournaments").get().then(function(s){return s.docs.map(function(d){return d.id})});
+    ids.then(function(list){return Promise.all(list.map(function(id){delete lastB[base+id];return DB.doc(base+id).delete()}))})
+      .then(function(){delete lastB["folders/"+w.id];return DB.doc("folders/"+w.id).delete()}).catch(dbErr);
+  }
+  function shareFolder(w){
+    if(!DB)return;
+    var ord=Date.now();w.ord=ord;freshF[w.id]=true;
+    w.tournaments.forEach(function(t,i){t.ord=t.ord||ord+i;freshT[t.id]=true});
+    put("folders/"+w.id,fBody(w))
+      .then(function(){return Promise.all(w.tournaments.map(function(t){
+        return put("folders/"+w.id+"/tournaments/"+t.id,tBody(t)).then(function(){delete freshT[t.id]})}))})
+      .then(function(){
+        delete freshF[w.id];
+        S.ws=S.ws.filter(function(x){return x.id!==w.id});
+        var sh=SH.filter(function(x){return x.id===w.id})[0];
+        if(!sh){w._sh=true;w.loaded=true;SH.push(w);sh=w}
+        subT(sh);subPrep(sh); /* whichever object the folder list already holds */
+        persist();toast("Folder shared with the team");rerender();})
+      .catch(dbErr);
+  }
+  function subFolders(){
+    subs.root=DB.collection("folders").orderBy("ord").onSnapshot(function(snap){
+      var seen={};
+      snap.docs.forEach(function(d){
+        var x=d.data()||{},w=SH.filter(function(y){return y.id===d.id})[0];
+        if(!w){w={id:d.id,_sh:true,tournaments:[],cur:null,loaded:false};SH.push(w)}
+        seen[d.id]=1;w.ord=x.ord||0;w.tcount=x.tcount||0;
+        if(!dirtyF[d.id]){
+          w.name=x.name||"Shared folder";w.kind=x.kind==="solo"?"solo":"team";
+          w.speakers=Array.isArray(x.speakers)?x.speakers:[];
+          lastB["folders/"+w.id]=JSON.stringify(fBody(w)); /* nothing to write back */
+        }
+      });
+      SH=SH.filter(function(w){
+        if(seen[w.id]||freshF[w.id])return true;
+        if(subs[w.id]){subs[w.id]();delete subs[w.id]}
+        if(subs["p"+w.id]){subs["p"+w.id]();delete subs["p"+w.id]}
+        return false;});
+      SH.sort(function(a,b){return(a.ord||0)-(b.ord||0)});
+      dbPending=false;
+      var cur=W();if(cur&&cur._sh){subT(cur);subPrep(cur)}
+      rerender();
+    },function(){dbPending=false;rerender()});
+  }
+  function subT(w){
+    if(!DB||subs[w.id])return;
+    subs[w.id]=DB.collection("folders/"+w.id+"/tournaments").orderBy("ord").onSnapshot(function(snap){
+      var seen={};
+      snap.docs.forEach(function(d){
+        seen[d.id]=1;
+        var x=d.data()||{},t=w.tournaments.filter(function(y){return y.id===d.id})[0];
+        if(!t){t={id:d.id,rounds:[]};w.tournaments.push(t)}
+        if(dirtyT[d.id])return; /* my own unsaved edits stand until my write lands */
+        t.name=x.name||"Tournament";t.format=x.format||"ap";t.teamRank=x.teamRank||{};t.teamPos=x.teamPos||"";
+        t.tabAvg=(typeof x.tabAvg==="number"?x.tabAvg:null);t.fieldSize=x.fieldSize||null;
+        t.rounds=Array.isArray(x.rounds)?x.rounds:[];t.ord=x.ord||0;fixT(t);
+        lastB["folders/"+w.id+"/tournaments/"+t.id]=JSON.stringify(tBody(t));
+      });
+      w.tournaments=w.tournaments.filter(function(t){return seen[t.id]||freshT[t.id]});
+      w.tournaments.sort(function(a,b){return(a.ord||0)-(b.ord||0)});
+      w.loaded=true;rerender();
+    },function(){w.loaded=true;rerender()});
+  }
+  function rerender(){ /* a live update never yanks the field someone is typing in */
+    var a=document.activeElement;
+    if(a&&a.closest&&a.closest("main")&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)){pend=true;return}
+    pend=false;view();
+  }
+  document.addEventListener("focusout",function(){
+    if(!pend)return;
+    setTimeout(function(){
+      var a=document.activeElement;
+      if(pend&&!(a&&a.closest&&a.closest("main")&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))){pend=false;view()}},120);
+  });
+  (function initCaps(){
+    var use=(window.claude&&window.claude.use)?window.claude.use.bind(window.claude):null;
+    if(!use){dbPending=false;initApi();return}
+    Promise.resolve(use("db")).then(function(d){
+      DB=d||null;if(DB)subFolders();else{dbPending=false;rerender()}
+    },function(){DB=null;dbPending=false;rerender()});
+    Promise.resolve(use("sample")).then(function(sm){SAMPLE=sm||null;rerender()},function(){SAMPLE=null});
+    Promise.resolve(use("user")).then(function(u){
+      USER=u||null;
+      if(USER&&USER.can)Promise.resolve(USER.can("data.write")).then(function(c){
+        if(c===true||c===false){canWrite=c;rerender()}},function(){});
+    },function(){});
+  })();
+  function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove("on")},1800)}
+  function copyText(text,ta){
+    if(ta){ta.focus();ta.select()}
+    (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject()).then(function(){toast("Copied")},function(){toast("Press Ctrl+C to copy the selected text")});
+  }
+  function newFolder(name,kind,firstSpeaker){
+    var w={id:uid(),name:name,kind:kind,speakers:[],tournaments:[],cur:null};
+    if(firstSpeaker)w.speakers.push({id:uid(),name:firstSpeaker,target:null});
+    S.ws.push(w);S.curWs=w.id;return w;
+  }
+  function validFolder(o){return o&&typeof o.name==="string"&&Array.isArray(o.speakers)&&Array.isArray(o.tournaments)}
+
+  /* ---------- scale ---------- */
+  // Old scale: 70 is average. New scale: 60 is average, and each old point is worth two new points.
+  function o2n(x){return 60+2*(x-70)}
+  function n2o(x){return 70+(x-60)/2}
+  function toDisp(x){return S.scale==="new"?o2n(x):x}
+  function fromDisp(x){return S.scale==="new"?n2o(x):x}
+  function r2(x){return Math.round(x*100)/100}
+  function fmt(x){if(x==null||isNaN(x))return"—";return String(r2(toDisp(x)))}
+  function fmtDelta(x){var v=r2(S.scale==="new"?x*2:x);return(v>0?"+":"")+v}
+  /* A reply speech is marked on half the range, so it converts as half of its doubled equivalent. */
+  function repDisp(x){return toDisp(2*x)/2}
+  function repFrom(d){return fromDisp(2*d)/2}
+  function fmtRep(x){if(x==null||isNaN(x))return"—";return String(r2(repDisp(x)))}
+  var LO=60,HI=85;
+
+  /* ---------- rounds ---------- */
+  function gOf(r){return r.stage||"prelim"}
+  function fOf(t){return FORMATS[t.format]||FORMATS.ap}
+  function sorted(t){ /* prelims, then break rounds in the order you arranged them, then spars */
+    return t.rounds.map(function(r,i){return{r:r,i:i}}).sort(function(a,b){
+      var d=GROUPS[gOf(a.r)]-GROUPS[gOf(b.r)];return d||a.i-b.i}).map(function(x){return x.r});
+  }
+  function inGroup(t,g){return sorted(t).filter(function(r){return gOf(r)===g})}
+  function shortOf(r){
+    if(r.short)return r.short;
+    var l=r.label||"";
+    if(gOf(r)==="prelim")return l.replace(/^round\s*/i,"R").slice(0,7);
+    return l.length>8?l.slice(0,7)+"…":l;
+  }
+  function tourPos(t,spId){ /* the position a speaker held across this tournament */
+    var vals={},k;
+    t.rounds.forEach(function(r){var p=(r.pos||{})[spId];if(p)vals[p]=1});
+    k=Object.keys(vals);
+    return k.length===1?k[0]:(k.length>1?"__mixed":"");
+  }
+  function setTourPos(t,spId,v){
+    t.rounds.forEach(function(r){r.pos=r.pos||{};if(v)r.pos[spId]=v;else delete r.pos[spId]});
+  }
+  function moveRound(t,id,dir){
+    var g=gOf(t.rounds.filter(function(r){return r.id===id})[0]);
+    var idx=[];t.rounds.forEach(function(r,i){if(gOf(r)===g)idx.push(i)});
+    var at=idx.map(function(i){return t.rounds[i].id}).indexOf(id),to=at+dir;
+    if(at<0||to<0||to>=idx.length)return;
+    var a=idx[at],b=idx[to],tmp=t.rounds[a];t.rounds[a]=t.rounds[b];t.rounds[b]=tmp;
+  }
+
+  /* ---------- maths ---------- */
+  function eachT(fn){W().tournaments.forEach(fn)}
+  function allRounds(g){var o=[];eachT(function(t){sorted(t).forEach(function(r){if(!g||gOf(r)===g)o.push(r)})});return o}
+  function allPairs(){var o=[];eachT(function(t){sorted(t).forEach(function(r){o.push({r:r,t:t})})});return o}
+  function nums(sp,t,g){
+    var list=t?sorted(t).filter(function(r){return!g||gOf(r)===g}):allRounds(g),out=[];
+    list.forEach(function(r){var v=r.scores[sp.id];if(typeof v==="number")out.push(v)});return out;
+  }
+  function repNums(sp,t){
+    var list=t?sorted(t):allRounds(),out=[];
+    list.forEach(function(r){var v=(r.replies||{})[sp.id];if(typeof v==="number")out.push(v)});return out;
+  }
+  function avg(a){return a.length?a.reduce(function(s,x){return s+x},0)/a.length:null}
+  function sd(a){if(a.length<3)return null;var m=avg(a);return Math.sqrt(avg(a.map(function(x){return(x-m)*(x-m)})))}
+  function ranks(list){
+    var s=list.filter(function(x){return x.val!=null}).sort(function(a,b){return b.val-a.val});
+    var m={};s.forEach(function(x,i){m[x.id]=(i>0&&s[i-1].val===x.val)?m[s[i-1].id]:i+1});return m}
+  function stats(sp){
+    var a=nums(sp),ab=0,rounds=0;
+    allRounds().forEach(function(r){var v=r.scores[sp.id];if(typeof v==="number")rounds++;else if(v==="ab")ab++});
+    var trend=null;
+    if(a.length>=3){var d=a[a.length-1]-avg(a.slice(0,-1));trend=d>=.5?"up":d<=-.5?"down":"flat"}
+    return{avg:avg(a),prelim:avg(nums(sp,null,"prelim")),brk:avg(nums(sp,null,"break")),rep:avg(repNums(sp)),
+      best:a.length?Math.max.apply(null,a):null,last:a.length?a[a.length-1]:null,n:rounds,ab:ab,sd:sd(a),trend:trend};
+  }
+  function posAvg(sp,code){
+    var out=[];allRounds().forEach(function(r){
+      if((r.pos||{})[sp.id]===code){var v=r.scores[sp.id];if(typeof v==="number")out.push(v)}});
+    return{avg:avg(out),n:out.length};
+  }
+  function reached(t){
+    var out=null;
+    inGroup(t,"break").forEach(function(r){
+      if(Object.keys(r.scores).some(function(k){return typeof r.scores[k]==="number"}))out=r.label});
+    return out;
+  }
+  function validRes(t,r){ /* a result left over from another format is ignored rather than miscounted */
+    var f=fOf(t);return !!r.result&&f.results.some(function(x){return x[0]===r.result})}
+  function resLabel(t,r){
+    var f=fOf(t),hit=f.results.filter(function(x){return x[0]===r.result})[0];return hit?hit[1]:null}
+  function judged(t){ /* rounds with a result recorded; spars are friendlies and stay out */
+    return sorted(t).filter(function(r){return gOf(r)!=="spar"&&validRes(t,r)})}
+  function bpPts(res){return 4-Number(res)}
+  function roundAvg(r){ /* every speaker's score in one round */
+    var out=[];W().speakers.forEach(function(sp){var v=r.scores[sp.id];if(typeof v==="number")out.push(v)});return avg(out);
+  }
+  function colorOf(i){return"var(--s"+(i%COLORS)+")"}
+  /* Only ever link out to a plain web address, since a shared folder is filled in by other people. */
+  function safeUrl(u){return(typeof u==="string"&&/^https?:\/\//i.test(u.trim()))?u.trim():""}
+  function nameCell(sp){
+    var u=safeUrl(sp.url);
+    return u?'<a class="plink" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+esc(sp.name)+'<span class="out">↗</span></a>'
+      :'<span class="name">'+esc(sp.name)+'</span>';
+  }
+  function pct(x){return Math.round(x)+"%"}
+  function ord(n){var v=Number(n),t=v%100;
+    return v+(t>=11&&t<=13?"th":["th","st","nd","rd"][v%10]||"th")}
+
+  /* ---------- routing ---------- */
+  function view(){
+    if(VIEWS.indexOf(S.view)<0)S.view="folders";
+    VIEWS.forEach(function(v){$("v-"+v).hidden=(v!==S.view)});
+    document.querySelectorAll("#nav .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.v===S.view)});
+    document.querySelectorAll("#scaleSw .tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.s===S.scale)});
+    setCtx();
+    if(S.view==="folders")renderFolders();
+    if(S.view==="overview")renderOverview();
+    if(S.view==="entry")renderEntry();
+    if(S.view==="prep")renderPrep();
+    if(S.view==="timer")renderTimer();
+    if(S.view==="speakers")renderSpeakers();
+  }
+  function setCtx(){var w=W();$("ctx").textContent=w?((w.kind==="team"?"Team · ":"Just me · ")+w.name):"Debate tab scores"}
+  function needFolder(){
+    if(dbPending)return'<div class="panel empty">Looking for your folders…</div>';
+    return'<div class="panel empty">Open or create a folder first. Go to <b>Folders</b>.</div>'}
+  function waiting(w){return!!(w&&w._sh&&!w.loaded)}
+  function banner(){
+    if(!ro())return'';
+    return'<div class="panel pad" style="border-color:var(--warn);background:var(--warn-soft);color:var(--warn)">'
+      +'You can read this shared folder but not change it. Whoever owns the page can give you <b>Contributor</b> access from its Share menu.</div>';
+  }
+
+  /* ---------- folders ---------- */
+  function card(w){
+    var nT=w._sh?(w.loaded?w.tournaments.length:(w.tcount||0)):w.tournaments.length;
+    return'<div class="panel folder'+(w.id===S.curWs?" cur":"")+'">'
+      +'<input class="f-name" data-fn="'+w.id+'" value="'+esc(w.name)+'" aria-label="Folder name"'+(w._sh&&canWrite===false?" disabled":"")+'>'
+      +'<div class="f-meta"><span class="pill '+(w._sh?"acc":"flat")+'">'+(w._sh?"Shared":"This device")+'</span>'
+      +'<span>'+(w.kind==="team"?"Team":"Just me")+'</span><span>·</span>'
+      +'<span>'+w.speakers.length+' speaker'+(w.speakers.length===1?"":"s")+'</span><span>·</span>'
+      +'<span>'+nT+' tournament'+(nT===1?"":"s")+'</span></div>'
+      +'<div class="row"><button class="btn primary" data-open="'+w.id+'">'+(w.id===S.curWs?"Open again":"Open")+'</button>'
+      +(!w._sh&&DB?'<button class="btn" data-share="'+w.id+'">Share with team</button>':'')
+      +'<button class="btn" data-code="'+w.id+'">Copy folder code</button>'
+      +'<button class="btn danger" data-delf="'+w.id+'">Delete</button></div></div>';
+  }
+  function renderFolders(){
+    var sh=SH.map(card).join(""),loc=S.ws.map(card).join("");
+    var where=DB?'<div class="kind"><label><input type="radio" name="where" value="shared" checked><span><b>Shared with the team</b><small>Everyone you give access to sees the same scores, live.</small></span></label>'
+      +'<label><input type="radio" name="where" value="local"><span><b>Only this device</b><small>Stays in this browser. Nobody else can see it.</small></span></label></div>':'';
+    $("v-folders").innerHTML='<div class="sec-head"><h2>Folders</h2><p>One folder per team, or one just for you. Each keeps its own speakers, tournaments and scores.</p></div>'
+      +(sh?'<div class="sec-head"><h3>Shared with the team</h3></div><div class="folders">'+sh+'</div>':'')
+      +(dbPending&&!sh?'<div class="panel empty">Looking for shared folders…</div>':'')
+      +(loc?'<div class="sec-head"'+(sh?' style="margin-top:8px"':'')+'><h3>On this device</h3></div><div class="folders">'+loc+'</div>':'')
+      +(!sh&&!loc&&!dbPending?'<div class="panel empty"><b>No folders yet.</b><br>Make one below to start keeping score.</div>':'')
+      +'<div class="sec-head" style="margin-top:8px"><h2>New folder</h2></div>'
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:14px">'
+      +'<div class="kind"><label><input type="radio" name="kind" value="team" checked><span><b>Team</b><small>Several speakers, scored side by side.</small></span></label>'
+      +'<label><input type="radio" name="kind" value="solo"><span><b>Just me</b><small>Only your own scores.</small></span></label></div>'
+      +where
+      +'<div class="row"><input class="field" id="nfName" placeholder="Folder name, e.g. Senior Team 2026" style="flex:1 1 220px" aria-label="Folder name">'
+      +'<input class="field" id="nfMe" placeholder="Your name" style="flex:1 1 160px" aria-label="Your name" hidden>'
+      +'<button class="btn primary" id="mkFolder">Create folder</button></div></div>'
+      +(DB?'<div class="sec-head" style="margin-top:8px"><h2>Letting your team in</h2></div>'
+        +'<div class="panel pad"><p style="margin:0">A shared folder lives with this page, so anyone who can open the page sees it. Use the page’s <b>Share</b> menu to invite your team. Give them <b>Contributor</b> so they can enter scores; <b>Viewer</b> lets them look without changing anything.</p></div>':'')
+      +'<div class="sec-head" style="margin-top:8px"><h2>Move a folder between devices</h2><p>A folder code is plain text. Paste one to add it to this device, then share it with the team if you want.</p></div>'
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:10px"><textarea class="field" id="fcIn" placeholder="Paste a folder code here" aria-label="Folder code"></textarea>'
+      +'<div class="row"><button class="btn" id="fcAdd">Add folder from code</button><span class="hint" id="fcMsg"></span></div></div>'
+      +(S.ws.length?'<div class="row"><button class="btn danger" id="wipe">Erase the folders on this device</button></div>':'')
+      +'<p class="hint">Shared folders are kept with the page. Folders on this device live in this browser only, so copy a folder code now and then as a backup.</p>';
+  }
+
+  /* ---------- overview ---------- */
+  function renderOverview(){
+    var el=$("v-overview"),w=W();
+    if(!w){el.innerHTML=needFolder();return}
+    if(waiting(w)){el.innerHTML='<div class="panel empty">Loading the shared folder…</div>';return}
+    if(!w.speakers.length||!allRounds().length){
+      el.innerHTML='<div class="sec-head"><h2>Overview</h2></div><div class="panel empty"><b>Nothing scored yet.</b><br>'+(w.speakers.length?'Go to <b>Enter scores</b> and add a tournament.':'Add speakers under <b>Speakers</b>, then enter scores under <b>Enter scores</b>.')+'</div>';return}
+    el.innerHTML=boardHTML()+recordHTML()
+      +'<div class="sec-head" style="margin-top:12px"><h2>Round by round</h2><p>Prelims are circles, break rounds are squares on a shaded band.</p></div>'
+      +'<div class="panel chart-box">'+chartHTML()+'</div>'
+      +positionHTML()+tagHTML()+fieldHTML()+tourHTML();
+  }
+
+  function boardHTML(){
+    var w=W(),anyBreak=allRounds("break").length>0;
+    var anyRep=w.speakers.some(function(sp){return repNums(sp).length>0});
+    var st=w.speakers.map(function(sp){return stats(sp)});
+    var rk=ranks(w.speakers.map(function(sp,i){return{id:sp.id,val:st[i].avg}}));
+    var order=w.speakers.map(function(sp,i){return i}).sort(function(a,b){var x=rk[w.speakers[a].id]||99,y=rk[w.speakers[b].id]||99;return x-y});
+    var rows=order.map(function(i){
+      var sp=w.speakers[i],s=st[i],p=null;
+      if(s.avg!=null&&sp.target)p=Math.max(0,Math.min(100,(s.avg-LO)/(sp.target-LO)*100));
+      var gap=(s.avg!=null&&sp.target)?sp.target-s.avg:null;
+      var tr=s.trend==="up"?'<span class="pill good">Rising</span>':s.trend==="down"?'<span class="pill bad">Dipping</span>':s.trend==="flat"?'<span class="pill flat">Steady</span>':'<span class="dash">—</span>';
+      var cons=s.sd==null?'<span class="dash">—</span>':s.sd<=.75?'<span class="pill good">Very consistent</span>':s.sd<=1.5?'<span class="pill flat">Consistent</span>':'<span class="pill warn">Variable</span>';
+      var tgt=sp.target?('<div style="display:flex;align-items:center;gap:10px"><div class="bar-track"><div class="bar-fill" style="width:'+(p==null?0:p)+'%"></div></div><span class="muted" style="font:12px var(--f-mono)">'+(gap==null?"":gap<=0?"met":fmtDelta(gap)+" to go")+'</span></div>'):'<span class="dash">no target</span>';
+      return'<tr><td><span class="rank'+(rk[sp.id]===1?" r1":"")+'">'+(rk[sp.id]||"–")+'</span></td>'
+        +'<td><span class="dot" style="background:'+colorOf(i)+'"></span>'+nameCell(sp)+'</td>'
+        +'<td class="n big">'+fmt(s.avg)+'</td><td class="n">'+fmt(s.prelim)+'</td>'
+        +(anyBreak?'<td class="n">'+fmt(s.brk)+'</td>':'')
+        +(anyRep?'<td class="n">'+fmtRep(s.rep)+(s.rep!=null?'<span class="sub3">'+fmt(2*s.rep)+' equiv</span>':'')+'</td>':'')
+        +'<td class="n">'+fmt(s.best)+'</td><td class="n">'+fmt(s.last)+'</td>'
+        +'<td class="n">'+s.n+(s.ab?' <span class="muted">(+'+s.ab+' ab)</span>':'')+'</td><td>'+tr+'</td><td>'+cons+'</td><td>'+tgt+'</td></tr>';
+    }).join("");
+    return'<div class="sec-head"><h2>Leaderboard</h2><p>Averages skip absent (ab) rounds. Reply speeches are kept separate because they are marked on half the range.</p>'
+      +'<a class="inline go" href="https://atomoslk.onrender.com/leaderboards.html" target="_blank" rel="noopener noreferrer">Atomos circuit leaderboards<span class="out">↗</span></a></div>'
+      +'<div class="panel scroll"><table><thead><tr><th>#</th><th>Speaker</th><th class="n">Average</th><th class="n">Prelims</th>'
+      +(anyBreak?'<th class="n">Breaks</th>':'')+(anyRep?'<th class="n">Reply</th>':'')
+      +'<th class="n">Best</th><th class="n">Latest</th><th class="n">Rounds</th><th>Trend</th><th>Consistency</th><th>Target</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function recordHTML(){
+    var w=W(),any=false;
+    w.tournaments.forEach(function(t){if(judged(t).length)any=true});
+    if(!any)return'';
+    var anyBp=false;
+    w.tournaments.forEach(function(t){if(fOf(t).results.length===4&&judged(t).length)anyBp=true});
+    var tRows=w.tournaments.filter(function(t){return judged(t).length}).map(function(t){
+      var js=judged(t),f=fOf(t),cell,rate;
+      if(f.results.length===4){
+        var pts=js.reduce(function(s,r){return s+bpPts(r.result)},0);
+        cell=pts+" of "+(js.length*3);rate=r2(pts/js.length)+" avg";
+      }else{
+        var wn=js.filter(function(r){return r.result==="w"}).length;
+        cell=wn+"–"+(js.length-wn);rate=pct(wn/js.length*100);
+      }
+      return'<tr><td><span class="name">'+esc(t.name)+'</span><span class="sub2">'+esc(f.name)+'</span></td>'
+        +'<td class="n">'+js.length+'</td><td class="n">'+cell+'</td><td class="n">'+rate+'</td></tr>';
+    }).join("");
+    /* by side, pooled across tournaments */
+    var bySide={};
+    w.tournaments.forEach(function(t){var f=fOf(t);judged(t).forEach(function(r){
+      if(!r.side)return;
+      var b=bySide[r.side]||(bySide[r.side]={n:0,w:0,l:0,pts:0,bp:0,sc:[]});
+      b.n++;
+      if(f.results.length===4){b.pts+=bpPts(r.result);b.bp++}
+      else if(r.result==="w")b.w++;else b.l++;
+      w.speakers.forEach(function(sp){var v=r.scores[sp.id];if(typeof v==="number")b.sc.push(v)});
+    })});
+    var sideRows=Object.keys(bySide).map(function(k){var b=bySide[k];
+      return'<tr><td>'+esc(SIDEL[k]||k)+'</td><td class="n">'+b.n+'</td>'
+        +'<td class="n">'+(b.w+b.l?b.w+"–"+b.l+' <span class="muted">'+pct(b.w/(b.w+b.l)*100)+'</span>':'<span class="dash">—</span>')+'</td>'
+        +(anyBp?'<td class="n">'+(b.bp?r2(b.pts/b.bp):'<span class="dash">—</span>')+'</td>':'')
+        +'<td class="n">'+fmt(avg(b.sc))+'</td></tr>'}).join("");
+    return'<div class="sec-head" style="margin-top:12px"><h2>Record</h2><p>Rounds where a result was recorded. Spars are left out.</p></div>'
+      +'<div class="split"><div class="panel scroll"><table><thead><tr><th>Tournament</th><th class="n">Rounds</th><th class="n">Record</th><th class="n">Rate</th></tr></thead><tbody>'+tRows+'</tbody></table></div>'
+      +(sideRows?'<div class="panel scroll"><table><thead><tr><th>Side</th><th class="n">Rounds</th><th class="n">Record</th>'+(anyBp?'<th class="n">BP pts</th>':'')+'<th class="n">Avg score</th></tr></thead><tbody>'+sideRows+'</tbody></table></div>'
+        :'<div class="panel empty">Set a side in a round’s details to compare Government and Opposition.</div>')+'</div>';
+  }
+
+  function positionHTML(){
+    var w=W(),used=[],anyRep=false;
+    ["1","2","3"].forEach(function(c){
+      if(allRounds().some(function(r){return Object.keys(r.pos||{}).some(function(k){return r.pos[k]===c})}))used.push(c)});
+    w.speakers.forEach(function(sp){if(repNums(sp).length)anyRep=true});
+    if(!used.length&&!anyRep)return'';
+    var rows=w.speakers.map(function(sp,i){
+      return'<tr><td><span class="dot" style="background:'+colorOf(i)+'"></span><span class="name">'+esc(sp.name)+'</span></td>'
+        +used.map(function(c){var p=posAvg(sp,c);
+          return'<td class="n">'+fmt(p.avg)+(p.n?'<span class="sub3">'+p.n+' round'+(p.n===1?"":"s")+'</span>':'')+'</td>'}).join("")
+        +(anyRep?(function(){var rn=repNums(sp),a=avg(rn);
+          return'<td class="n">'+fmtRep(a)+(rn.length?'<span class="sub3">'+rn.length+' reply'+(rn.length===1?"":" speeches")+'</span>':'')+'</td>'})():'')
+        +'</tr>'}).join("");
+    return'<div class="sec-head" style="margin-top:12px"><h2>By position</h2><p>Which slot each speaker is strongest in. A 1st speaker on Government is the PM, on Opposition the LO.</p></div>'
+      +'<div class="panel scroll"><table><thead><tr><th>Speaker</th>'
+      +used.map(function(c){return'<th class="n">'+POSL[c]+'</th>'}).join("")
+      +(anyRep?'<th class="n">Reply</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function tagHTML(){
+    var by={};
+    allPairs().forEach(function(p){
+      var tag=(p.r.tag||"").trim();if(!tag||gOf(p.r)==="spar")return;
+      var b=by[tag]||(by[tag]={n:0,sc:[],w:0,l:0,pts:0,bp:0});
+      b.n++;W().speakers.forEach(function(sp){var v=p.r.scores[sp.id];if(typeof v==="number")b.sc.push(v)});
+      if(validRes(p.t,p.r)){if(fOf(p.t).results.length===4){b.pts+=bpPts(p.r.result);b.bp++}
+        else if(p.r.result==="w")b.w++;else b.l++}
+    });
+    var keys=Object.keys(by);if(!keys.length)return'';
+    keys.sort(function(a,b){return by[b].n-by[a].n||a.localeCompare(b)});
+    var rows=keys.map(function(k){var b=by[k];
+      return'<tr><td>'+esc(k)+'</td><td class="n">'+b.n+'</td><td class="n">'+fmt(avg(b.sc))+'</td>'
+        +'<td class="n">'+(b.w+b.l?b.w+"–"+b.l:'<span class="dash">—</span>')+'</td>'
+        +'<td class="n">'+(b.w+b.l?pct(b.w/(b.w+b.l)*100):(b.bp?r2(b.pts/b.bp)+' pts':'<span class="dash">—</span>'))+'</td></tr>'}).join("");
+    return'<div class="sec-head" style="margin-top:12px"><h2>By motion theme</h2><p>Tag a round in its details to build this up. It shows where the preparation is paying off.</p></div>'
+      +'<div class="panel scroll"><table><thead><tr><th>Theme</th><th class="n">Rounds</th><th class="n">Avg score</th><th class="n">Record</th><th class="n">Rate</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function fieldHTML(){
+    var w=W();
+    var ts=w.tournaments.filter(function(t){return t.tabAvg!=null||t.fieldSize||t.teamPos||Object.keys(t.teamRank||{}).some(function(k){return(t.teamRank[k]||"")!==""})});
+    if(!ts.length)return'';
+    var rows=ts.map(function(t){
+      return'<tr><td><span class="name">'+esc(t.name)+'</span>'
+        +(t.teamPos?'<span class="sub2">Team finished '+ord(t.teamPos)+'</span>':'')
+        +(t.tabAvg!=null?'<span class="sub2">Tab average '+fmt(t.tabAvg)+'</span>':'')
+        +(t.fieldSize?'<span class="sub2">'+t.fieldSize+' speakers in the tab</span>':'')+'</td>'
+        +w.speakers.map(function(sp){
+          var a=avg(nums(sp,t));if(a==null)return'<td class="n"><span class="dash">—</span></td>';
+          var d=t.tabAvg!=null?a-t.tabAvg:null,rk=(t.teamRank||{})[sp.id];
+          var sub=[];
+          if(d!=null)sub.push('<span class="'+(d>=0?"pos":"neg")+'">'+fmtDelta(d)+' vs tab</span>');
+          if(rk)sub.push(esc(rk)+(t.fieldSize?" of "+t.fieldSize+", top "+pct(Math.min(100,rk/t.fieldSize*100)):""));
+          return'<td class="n">'+fmt(a)+(sub.length?'<span class="sub3">'+sub.join(" · ")+'</span>':'')+'</td>'}).join("")
+        +'</tr>'}).join("");
+    return'<div class="sec-head" style="margin-top:12px"><h2>Against the field</h2><p>How each average compared with everyone else at that tab.</p></div>'
+      +'<div class="panel scroll"><table><thead><tr><th>Tournament</th>'+w.speakers.map(function(sp){return'<th class="n">'+esc(sp.name)+'</th>'}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function tourHTML(){
+    var w=W();
+    var rows=w.tournaments.map(function(t){
+      var tr=ranks(w.speakers.map(function(sp){return{id:sp.id,val:avg(nums(sp,t))}})),rch=reached(t);
+      var pu=safeUrl(prepUrl(w,t));
+      return'<tr><td><span class="name">'+esc(t.name)+'</span>'
+        +(pu?' <a class="inline go2" href="'+esc(pu)+'" target="_blank" rel="noopener noreferrer">prep doc<span class="out">\u2197</span></a>':'')
+        +(rch?'<span class="sub2">Reached '+esc(rch)+'</span>':'')+'</td>'
+        +w.speakers.map(function(sp){var a=avg(nums(sp,t));
+          return'<td class="n">'+(a==null?'<span class="dash">—</span>':fmt(a)+' <span class="muted">#'+tr[sp.id]+'</span>')+'</td>'}).join("")+'</tr>'}).join("");
+    return'<div class="sec-head" style="margin-top:12px"><h2>Tournament averages</h2><p>The small number is the speaker’s rank inside that tournament.</p></div>'
+      +'<div class="panel scroll"><table><thead><tr><th>Tournament</th>'+w.speakers.map(function(sp){return'<th class="n">'+esc(sp.name)+'</th>'}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function chartHTML(){
+    var w=W(),pts=allPairs(),seps=[],at=0;
+    w.tournaments.forEach(function(t){seps.push({name:t.name,start:at});at+=sorted(t).length});
+    var vals=[];w.speakers.forEach(function(sp){pts.forEach(function(p){var v=p.r.scores[sp.id];if(typeof v==="number")vals.push(toDisp(v))})});
+    if(!vals.length)return'<div class="empty">Scores you enter will be plotted here.</div>';
+    var mn=Math.floor(Math.min.apply(null,vals)-.5),mx=Math.ceil(Math.max.apply(null,vals)+.5);
+    var step=(mx-mn)>8?2:1; mn=Math.floor(mn/step)*step; mx=Math.ceil(mx/step)*step;
+    var Wd=Math.max(560,pts.length*66+90),H=300,L=48,R=20,T=24,B=52;
+    var X=function(i){return L+(pts.length<=1?(Wd-L-R)/2:i*(Wd-L-R)/(pts.length-1))};
+    var Y=function(v){return T+(mx-v)/(mx-mn)*(H-T-B)};
+    var mid=function(i){return i<=0?X(0)-22:(X(i-1)+X(i))/2};
+    var bands="",i=0;
+    while(i<pts.length){
+      if(gOf(pts[i].r)==="break"){
+        var j=i;while(j+1<pts.length&&gOf(pts[j+1].r)==="break"&&pts[j+1].t===pts[i].t)j++;
+        var x0=mid(i),x1=(j+1<pts.length&&pts[j+1].t===pts[i].t)?mid(j+1):X(j)+22;
+        bands+='<rect class="band" x="'+x0+'" y="'+T+'" width="'+(x1-x0)+'" height="'+(H-T-B+30)+'" rx="4"/>'
+          +'<text class="bandlab" x="'+((x0+x1)/2)+'" y="'+(T-9)+'" text-anchor="middle">BREAK</text>';
+        i=j+1;
+      } else i++;
+    }
+    var g="";for(var v=mn;v<=mx;v+=step){g+='<line class="grid" x1="'+L+'" x2="'+(Wd-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text x="'+(L-8)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>'}
+    var sp="";seps.forEach(function(s,k){
+      if(k>0)sp+='<line class="sep" x1="'+mid(s.start)+'" x2="'+mid(s.start)+'" y1="'+T+'" y2="'+(H-B+30)+'"/>';
+      sp+='<text class="tname" x="'+X(s.start)+'" y="'+(H-8)+'">'+esc(s.name)+'</text>';
+    });
+    var xl=pts.map(function(p,k){return'<text x="'+X(k)+'" y="'+(H-B+18)+'" text-anchor="middle">'+esc(shortOf(p.r))+'</text>'}).join("");
+    var lines="",marks="";
+    w.speakers.forEach(function(s,si){
+      var c=colorOf(si),seg=[];
+      pts.forEach(function(p,k){var val=p.r.scores[s.id];
+        if(typeof val==="number"){
+          var x=X(k),y=Y(toDisp(val));seg.push(x+","+y);
+          var tip='<title>'+esc(s.name)+", "+esc(p.t.name)+" "+esc(p.r.label)+": "+fmt(val)+'</title>';
+          marks+=gOf(p.r)==="break"
+            ?'<rect x="'+(x-4)+'" y="'+(y-4)+'" width="8" height="8" rx="1.5" fill="'+c+'" stroke="var(--surface)" stroke-width="1.5">'+tip+'</rect>'
+            :'<circle cx="'+x+'" cy="'+y+'" r="4" fill="'+c+'" stroke="var(--surface)" stroke-width="1.5">'+tip+'</circle>';
+        } else {if(seg.length>1)lines+='<polyline points="'+seg.join(" ")+'" fill="none" stroke="'+c+'" stroke-width="2"/>';seg=[]}});
+      if(seg.length>1)lines+='<polyline points="'+seg.join(" ")+'" fill="none" stroke="'+c+'" stroke-width="2"/>';
+    });
+    var leg='<div class="legend">'+w.speakers.map(function(s,k){return'<span><span class="dot" style="background:'+colorOf(k)+'"></span>'+esc(s.name)+'</span>'}).join("")
+      +'<span class="muted" style="margin-left:auto"><span class="dot sq" style="background:var(--muted)"></span>break round</span></div>';
+    return leg+'<div class="scroll"><svg viewBox="0 0 '+Wd+' '+H+'" width="'+Wd+'" height="'+H+'" role="img" aria-label="Speaker scores by round">'+bands+g+sp+xl+lines+marks+'</svg></div>';
+  }
+
+  /* ---------- enter scores ---------- */
+  function curT(){var w=W();var t=w.tournaments.filter(function(x){return x.id===w.cur})[0];if(!t&&w.tournaments.length){t=w.tournaments[w.tournaments.length-1];w.cur=t.id}return t}
+  function cellVal(v){return v==="ab"?"ab":(typeof v==="number"?String(r2(toDisp(v))):"")}
+  function selOpts(list,cur,blank){
+    return'<option value="">'+(blank||"—")+'</option>'+list.map(function(o){
+      return'<option value="'+esc(o[0])+'"'+(cur===o[0]?" selected":"")+'>'+esc(o[1])+'</option>'}).join("");
+  }
+  function renderEntry(){
+    var el=$("v-entry"),w=W();
+    if(!w){el.innerHTML=needFolder();return}
+    if(waiting(w)){el.innerHTML='<div class="panel empty">Loading the shared folder…</div>';return}
+    var t=curT(),nCols=w.speakers.length+2;
+    var chips=w.tournaments.map(function(x){return'<button class="chip" data-t="'+x.id+'" aria-pressed="'+(t&&x.id===t.id)+'">'+esc(x.name)+'</button>'}).join("")
+      +(ro()?'':'<button class="chip add" id="addT">+ New tournament</button>');
+    var head='<div class="sec-head"><h2>Enter scores</h2><p>Type the score from the tab, or <b>ab</b> if the speaker was absent. Enter moves down a column. The <b>i</b> button opens the motion, result and positions for that round.</p></div>'+banner()+'<div class="chips">'+chips+'</div>';
+    function prepBar(){
+      var raw=prepUrl(w,t),pu=safeUrl(raw);
+      return'<div class="panel pad" style="display:flex;flex-direction:column;gap:10px"><div class="row">'
+        +'<h3 style="margin-right:4px">Prep doc</h3>'
+        +(pu?'<a class="btn primary" href="'+esc(pu)+'" target="_blank" rel="noopener noreferrer">Open prep doc<span class="out">↗</span></a>':'')
+        +'<a class="btn" href="https://docs.google.com/document/create" target="_blank" rel="noopener noreferrer">New Google Doc<span class="out">↗</span></a>'
+        +'<input class="field" id="tDoc" type="url" value="'+esc(raw)+'" placeholder="Paste the doc link here" aria-label="Prep doc link" style="flex:1 1 240px"></div>'
+        +'<p class="hint">Saved with the tournament, so the whole team opens the same doc. The new doc lands in your own Drive, so share it in Google as well.</p></div>';
+    }
+    if(!w.speakers.length){el.innerHTML=head+'<div class="panel empty">Add at least one speaker under <b>Speakers</b> first.</div>';return}
+    if(!t){el.innerHTML=head+'<div class="panel empty"><b>No tournaments yet.</b><br>Press <b>+ New tournament</b> to add your first one.</div>';return}
+    var f=fOf(t);
+
+    function detRow(r){
+      var open=!!openDet[r.id];
+      var d=dis();
+      var posSel=w.speakers.map(function(sp){
+        return'<label class="fl">'+esc(sp.name)+'<select data-pos="'+r.id+'" data-sp="'+sp.id+'"'+d+'>'
+          +selOpts(["1","2","3"].slice(0,f.n).map(function(c){return[c,POSL[c]]}),(r.pos||{})[sp.id],"not set")+'</select></label>'}).join("");
+      return'<tr class="det" data-for="'+r.id+'"'+(open?"":" hidden")+'><td colspan="'+nCols+'">'
+        +'<div class="detg"><label class="fl wide">Motion<input data-motion="'+r.id+'" value="'+esc(r.motion||"")+'" placeholder="This house would…"'+d+'></label>'
+        +'<label class="fl"'+(sampleOk()?' style="grid-column:span 2"':'')+'>Theme<span class="row" style="gap:6px;flex-wrap:nowrap;margin-top:4px">'
+          +'<input list="tagList" data-tag="'+r.id+'" value="'+esc(r.tag||"")+'" placeholder="e.g. Economics" style="flex:1 1 auto;margin-top:0"'+d+'>'
+          +(sampleOk()?'<button class="btn" data-tagai="'+r.id+'" title="Work out the theme from the motion" style="padding:7px 10px;white-space:nowrap">Suggest</button>':'')
+          +'</span></label>'
+        +'<label class="fl">Side<select data-side="'+r.id+'"'+d+'>'+selOpts(f.sides,r.side,"not set")+'</select></label>'
+        +'<label class="fl">Result<select data-result="'+r.id+'"'+d+'>'+selOpts(f.results,r.result,"not set")+'</select></label>'
+        +posSel
+        +(f.reply?'<label class="chk"><input type="checkbox" data-hasrep="'+r.id+'"'+(r.hasReply?" checked":"")+d+'> Reply speech</label>':'')
+        +'</div></td></tr>';
+    }
+    function rowsFor(g){
+      var list=inGroup(t,g);
+      return list.map(function(r,k){
+        var meta=[],rl=resLabel(t,r);
+        if(rl)meta.push(rl);
+        if(r.side)meta.push(SIDEL[r.side]||r.side);
+        if(r.tag)meta.push(r.tag);
+        var d=dis();
+        var main='<tr><td><input class="lbl" data-lbl="'+r.id+'" value="'+esc(r.label)+'" aria-label="Round name"'+d+'>'
+          +(meta.length?'<span class="sub3" style="padding-left:6px">'+esc(meta.join(" · "))+'</span>':'')
+          +(r.motion?'<span class="motionq">“'+esc(r.motion)+'”</span>':'')+'</td>'
+          +w.speakers.map(function(sp){return'<td class="n"><input class="grid-in" inputmode="decimal" autocomplete="off" data-r="'+r.id+'" data-s="'+sp.id+'" value="'+cellVal(r.scores[sp.id])+'" aria-label="'+esc(sp.name)+', '+esc(r.label)+'"'+d+'></td>'}).join("")
+          +'<td><div class="acts">'
+          +'<button class="rowbtn'+(openDet[r.id]?" on":"")+'" data-det="'+r.id+'" title="Motion, result and positions" aria-label="Round details">i</button>'
+          +(g==="break"&&!ro()?'<button class="rowbtn" data-up="'+r.id+'" title="Move up" aria-label="Move up"'+(k===0?" disabled":"")+'>↑</button>'
+            +'<button class="rowbtn" data-down="'+r.id+'" title="Move down" aria-label="Move down"'+(k===list.length-1?" disabled":"")+'>↓</button>':'')
+          +(ro()?'':'<button class="rowbtn x" data-del="'+r.id+'" title="Remove round" aria-label="Remove round">×</button>')+'</div></td></tr>';
+        var rep=(r.hasReply&&f.reply)?'<tr class="rep"><td class="rlab">↳ Reply speech <span class="muted">half scale</span></td>'
+          +w.speakers.map(function(sp){var v=(r.replies||{})[sp.id];
+            return'<td class="n"><input class="grid-in" inputmode="decimal" autocomplete="off" data-rp="'+r.id+'" data-s="'+sp.id+'" value="'+(typeof v==="number"?String(r2(repDisp(v))):"")+'" aria-label="'+esc(sp.name)+' reply, '+esc(r.label)+'"'+d+'></td>'}).join("")
+          +'<td></td></tr>':'';
+        return main+rep+detRow(r);
+      }).join("");
+    }
+    function hdr(txt,note){return'<tr class="shdr"><th colspan="'+nCols+'">'+txt+(note?'<span>'+note+'</span>':'')+'</th></tr>'}
+    var opts=BREAKS.map(function(b){return'<option value="'+esc(b[0])+'">'+esc(b[0])+'</option>'}).join("")+'<option value="__custom">Something else…</option>';
+    var brRows=inGroup(t,"break").length?rowsFor("break"):'<tr><td colspan="'+nCols+'" class="muted" style="padding:14px 12px">No break rounds yet. Add the ones this tab actually ran.</td></tr>';
+    var sparRows=inGroup(t,"spar").length?hdr("Spars","Counted in averages but left out of the record")+rowsFor("spar"):"";
+    var colHead='<tr><th>Round</th>'+w.speakers.map(function(sp,i){return'<th class="n"><span class="dot" style="background:'+colorOf(i)+'"></span>'+esc(sp.name)+'</th>'}).join("")+'<th></th></tr>';
+
+    el.innerHTML=head+prepBar()
+      +'<datalist id="tagList">'+TAGS.map(function(x){return'<option value="'+esc(x)+'"></option>'}).join("")+'</datalist>'
+      +'<div class="panel scroll"><table><thead>'+colHead+'</thead>'
+      +'<tbody>'+hdr("Preliminary rounds")+rowsFor("prelim")+'</tbody>'
+      +'<tbody>'+hdr("Break rounds","In the order they were debated")+brRows+'</tbody>'
+      +'<tbody>'+sparRows+'</tbody>'
+      +'<tbody id="sumRows"></tbody>'
+      +'</table></div>'
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:10px"><h3>Positions and ranking</h3>'
+      +'<p class="hint">The position applies to every round of this tournament. To change one round on its own, use that round’s <b>i</b> button.</p>'
+      +'<div class="scroll"><table><thead><tr><th>Speaker</th><th>Position</th><th class="n">Rank in the speaker tab</th></tr></thead><tbody>'
+      +w.speakers.map(function(sp,i){
+        var cur=tourPos(t,sp.id);
+        return'<tr><td><span class="dot" style="background:'+colorOf(i)+'"></span><span class="name">'+esc(sp.name)+'</span></td>'
+          +'<td><select class="field" data-tpos="'+sp.id+'" aria-label="'+esc(sp.name)+' position"'+dis()+'>'
+          +'<option value=""'+(cur===""?" selected":"")+'>not set</option>'
+          +(cur==="__mixed"?'<option value="__mixed" selected>Varies by round</option>':'')
+          +["1","2","3"].slice(0,f.n).map(function(c){return'<option value="'+c+'"'+(cur===c?" selected":"")+'>'+POSL[c]+'</option>'}).join("")
+          +'</select></td>'
+          +'<td class="n"><input class="grid-in" inputmode="numeric" data-team="'+sp.id+'" value="'+esc((t.teamRank||{})[sp.id]||"")+'" placeholder="—" aria-label="'+esc(sp.name)+' rank in tab"'+dis()+'></td></tr>'}).join("")
+      +'</tbody></table></div></div>'
+      +(ro()?'':'<div class="row"><button class="btn primary" id="addR">+ Prelim round</button>'
+      +'<span class="row" style="gap:6px"><select class="field" id="brSel" aria-label="Break round to add">'+opts+'</select>'
+      +'<input class="field" id="brCustom" placeholder="Name it" style="width:150px" aria-label="Break round name" hidden>'
+      +'<button class="btn" id="addBr">+ Break round</button></span>'
+      +'<button class="btn" id="addSpar">+ Spar</button></div>')
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:12px"><h3>Tournament settings</h3>'
+      +'<div class="detg"><label class="fl">Name<input id="tName" value="'+esc(t.name)+'"'+dis()+'></label>'
+      +'<label class="fl">Format<select id="tFmt"'+dis()+'>'+Object.keys(FORMATS).map(function(k){return'<option value="'+k+'"'+(t.format===k?" selected":"")+'>'+esc(FORMATS[k].name)+'</option>'}).join("")+'</select></label>'
+      +'<label class="fl">Tab average<input id="tAvg" inputmode="decimal" value="'+(t.tabAvg!=null?fmt(t.tabAvg):"")+'" placeholder="optional"'+dis()+'></label>'
+      +'<label class="fl">Speakers in the tab<input id="tField" inputmode="numeric" value="'+esc(t.fieldSize||"")+'" placeholder="optional"'+dis()+'></label>'
+      +'<label class="fl">Team’s rank in the tab<input id="tTeam" inputmode="numeric" value="'+esc(t.teamPos||"")+'" placeholder="optional"'+dis()+'></label></div>'
+      +(ro()?'':'<div class="row"><button class="btn danger" id="delT">Delete tournament</button></div>')+'</div>'
+      +'<p class="hint">Scores outside '+fmt(LO)+'–'+fmt(HI)+' get an amber outline so typos stand out. Current scale: '+(S.scale==="new"?"new (60 is average)":"old (70 is average)")+'.</p>';
+    updateSums();flagAll();
+  }
+  function updateSums(){
+    var w=W(),t=curT(),el=$("sumRows");if(!el||!t)return;
+    var hasBr=inGroup(t,"break").length>0,hasSpar=inGroup(t,"spar").length>0;
+    var hasRep=w.speakers.some(function(sp){return repNums(sp,t).length>0});
+    var av=w.speakers.map(function(sp){return avg(nums(sp,t))});
+    var rk=ranks(w.speakers.map(function(sp,i){return{id:sp.id,val:av[i]}}));
+    function line(lab,vals){return'<tr class="sum"><td>'+lab+'</td>'+vals.map(function(v){return'<td class="n">'+v+'</td>'}).join("")+'<td></td></tr>'}
+    el.innerHTML=(hasBr||hasSpar?line("Prelims average",w.speakers.map(function(sp){return fmt(avg(nums(sp,t,"prelim")))})):"")
+      +(hasBr?line("Breaks average",w.speakers.map(function(sp){return fmt(avg(nums(sp,t,"break")))})):"")
+      +(hasRep?line("Reply average",w.speakers.map(function(sp){return fmtRep(avg(repNums(sp,t)))})):"")
+      +line("Tournament average",av.map(fmt))
+      +line("Rank in this tournament",w.speakers.map(function(sp){return rk[sp.id]||"—"}));
+  }
+  function parseCell(txt,isRep){
+    var s=txt.trim().toLowerCase();
+    if(s==="")return{v:null};
+    if(!isRep&&(s==="ab"||s==="a"||s==="abs"||s==="absent"))return{v:"ab"};
+    if(!/^[0-9]*[.,]?[0-9]*$/.test(s)||isNaN(parseFloat(s.replace(",","."))))return{bad:true};
+    var n=parseFloat(s.replace(",","."));
+    return{v:r2(isRep?repFrom(n):fromDisp(n))};
+  }
+  function flag(inp){
+    var isRep=!!inp.dataset.rp,p=parseCell(inp.value,isRep);
+    inp.classList.toggle("inv",!!p.bad);
+    inp.classList.toggle("ab",p.v==="ab");
+    var lo=isRep?LO/2:LO,hi=isRep?HI/2:HI;
+    inp.classList.toggle("odd",typeof p.v==="number"&&(p.v<lo||p.v>hi));
+  }
+  function flagAll(){document.querySelectorAll("#v-entry .grid-in[data-r],#v-entry .grid-in[data-rp]").forEach(flag)}
+
+  /* ---------- motion prep: Claude on claude.ai, or through our own server elsewhere ---------- */
+  function initApi(){
+    if(!window.fetch||location.protocol==="file:")return;
+    fetch("/api/health").then(function(r){return r.ok?r.json():null}).then(function(j){
+      if(j&&j.claude){API=true;API_CODE=!!j.code;API_BYOK=!!j.byok;rerender()}},function(){});
+  }
+  function getStored(k){try{return localStorage.getItem(k)||""}catch(e){return""}}
+  function setStored(k,v){try{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k)}catch(e){}}
+  function getCode(){return getStored(CODE_KEY)}
+  function setCode(v){setStored(CODE_KEY,v)}
+  function apiErr(code,text){var e=new Error(code);e.code=code;if(text)e.text=text;return e}
+  function apiHeaders(){
+    var h={"Content-Type":"application/json"},c=getCode(),k=getStored(UKEY);
+    if(c&&API_CODE)h["X-Access-Code"]=c;
+    if(k&&API_BYOK)h["X-User-Key"]=k; /* the visitor's own key, so their account pays */
+    return h;
+  }
+  function apiFail(r){return r.json().then(function(j){throw apiErr((j&&j.code)||"error")},function(){throw apiErr("error")})}
+  function apiStream(path,body,opts){ /* same shape as the claude.ai sample call: onText gets the whole answer so far */
+    var text="";
+    return fetch(path,{method:"POST",headers:apiHeaders(),body:JSON.stringify(body),signal:opts.signal}).then(function(r){
+      if(!r.ok)return apiFail(r);
+      var rd=r.body.getReader(),dec=new TextDecoder(),buf="",end=null;
+      function line(s){
+        if(!s)return;var m=JSON.parse(s);
+        if(m.d){text+=m.d;if(opts.onText)opts.onText({text:text,delta:m.d})}
+        if(m.error)throw apiErr(m.error,text);
+        if(m.done)end={text:text,truncated:!!m.truncated,refused:!!m.refused};
+      }
+      function pump(){return rd.read().then(function(x){
+        if(x.done){
+          line(buf.trim());
+          if(!end)throw apiErr("network",text);
+          if(end.refused&&!end.text)throw apiErr("refused");
+          return end;
+        }
+        buf+=dec.decode(x.value,{stream:true});
+        var parts=buf.split("\n");buf=parts.pop();parts.forEach(line);
+        return pump();
+      })}
+      return pump();
+    }).catch(function(e){
+      if(e&&e.name==="AbortError")throw apiErr("cancelled",text);
+      if(e&&typeof e.code==="string")throw e;
+      throw apiErr("network",text);
+    });
+  }
+  function apiJson(path,body){
+    return fetch(path,{method:"POST",headers:apiHeaders(),body:JSON.stringify(body)})
+      .then(function(r){return r.ok?r.json():apiFail(r)},function(){throw apiErr("network")});
+  }
+  function askPrep(motion,fmtKey,opts){
+    if(SAMPLE)return SAMPLE(motionPrompt(motion,fmtKey),opts);
+    return apiStream("/api/prep",{motion:motion,format:fmtKey},opts);
+  }
+  function askTheme(motion){
+    if(SAMPLE)return SAMPLE.json('Pick the single best theme for this debate motion from the list below.\n'
+      +'Motion: '+motion+'\nThemes: '+TAGS.join(", ")
+      +'\nReply with only {"theme":"<one theme copied exactly from the list>"}',{modelTier:"quick"});
+    return apiJson("/api/theme",{motion:motion});
+  }
+  function sampleOk(){return (!!SAMPLE||API)&&!sampleDead}
+  function sampleCopy(c){
+    if(c==="need_key")return"Paste your Anthropic API key first.";
+    if(c==="bad_key")return"That API key was not accepted. Check you copied all of it.";
+    if(c==="key_problem")return"Claude turned the request down. Check your API account has credit.";
+    if(c==="need_code")return"Enter the team access code first.";
+    if(c==="bad_code")return"That access code is not right.";
+    if(c==="too_many")return"That is the limit for this hour. Try again later.";
+    if(c==="busy")return"Claude is busy right now. Try again in a minute.";
+    if(c==="no_key"||c==="server_key")return"The server's Claude key is missing or wrong. Tell whoever runs the site.";
+    if(c==="network")return"Could not reach the server. Check your connection and try again.";
+    if(c==="rate_limited")return"That is your Claude usage limit for now. Try again later.";
+    if(c==="session_expired")return"Sign in to Claude again, then retry.";
+    if(c==="refused")return"Claude would not answer that one. Try rewording the motion.";
+    if(c==="empty_completion")return"Nothing came back. Try a shorter motion.";
+    if(c==="prompt_too_large")return"That motion is too long.";
+    if(c==="invalid_json")return"The answer came back in the wrong shape. Try again.";
+    return"Something went wrong. Try again.";
+  }
+  function sampleGone(c){
+    return c==="not_granted"||c==="sampling_disabled"||c==="not_declared"
+      ||c==="capability_disabled"||c==="capability_removed";
+  }
+  function motionPrompt(motion,fmtKey){
+    var f=FORMATS[fmtKey]||FORMATS.ap,sides=f.sides.map(function(x){return x[1]}).join(" and ");
+    return "You are coaching a school debater preparing for a round.\n"
+      +"Format: "+f.name+". Sides: "+sides+".\n"
+      +"Motion: "+motion+"\n\n"
+      +"Write a tight prep brief under these headings and nothing else:\n"
+      +"SETUP - how to define the motion and set the context, two lines.\n"
+      +"BURDENS - what each side has to prove, one line each.\n"
+      +"CLASHES - the three arguments the round will turn on.\n"
+      +"CASE FOR "+f.sides[0][1].toUpperCase()+" - three arguments, each a claim line and a mechanism line.\n"
+      +"CASE FOR "+f.sides[1][1].toUpperCase()+" - three arguments, same shape.\n"
+      +"POIs - two sharp questions each side can ask.\n"
+      +"Be concrete and specific to this motion. No preamble, no conclusion, under 400 words.";
+  }
+  function runPrep(motion,fmtKey){
+    if(!sampleOk()||pmBusy)return;
+    pmBusy=true;pmText="";pmNote="";pmCtl=new AbortController();
+    renderPrep();
+    askPrep(motion,fmtKey,{
+      signal:pmCtl.signal,
+      onText:function(u){pmText=u.text;var o=$("pmOut");if(o)o.textContent=u.text}
+    }).then(function(r){
+      pmBusy=false;pmText=r.text;pmNote=r.truncated?"Cut short. Ask for less next time.":"";renderPrep();
+    },function(e){
+      pmBusy=false;
+      var c=e&&e.code;
+      if(sampleGone(c)){sampleDead=true;renderPrep();return}
+      if(c==="cancelled"){pmText=e.text||pmText;pmNote="Stopped.";renderPrep();return}
+      if(c==="refused"){pmText="";pmNote=sampleCopy(c);renderPrep();return}
+      pmText=e.text||pmText;pmNote=sampleCopy(c);renderPrep();
+    });
+  }
+  function renderPrep(){
+    var el=$("v-prep"),w=W(),t=(w&&w.tournaments&&w.tournaments.length)?curT():null;
+    var pu=(w&&t)?safeUrl(prepUrl(w,t)):"";
+    var head='<div class="sec-head"><h2>Motion prep</h2><p>Paste a motion and get the burdens, the clashes and a starting case for both sides.</p></div>';
+    if(!sampleOk()){
+      el.innerHTML=head+'<div class="panel empty"><b>Claude is not available here.</b><br>'
+        +'This part needs the Speaksheet server, or the claude.ai page while you are signed in. It does nothing in a downloaded file.</div>';
+      return;
+    }
+    var needCode=!SAMPLE&&API_CODE,needKey=!SAMPLE&&API_BYOK,haveKey=!!getStored(UKEY);
+    var fmt=S.prepFmt||(t&&t.format)||"ap";
+    el.innerHTML=head
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:12px">'
+      +'<label class="fl">Motion<textarea id="pmIn" class="field motion" placeholder="This house would\u2026" aria-label="Motion"></textarea></label>'
+      +'<div class="row"><label class="fl">Format<select id="pmFmt">'
+      +Object.keys(FORMATS).map(function(k){return'<option value="'+k+'"'+(fmt===k?" selected":"")+'>'+esc(FORMATS[k].name)+'</option>'}).join("")
+      +'</select></label>'
+      +'<button class="btn primary" id="pmGo"'+(pmBusy?" disabled":"")+'>Break it down</button>'
+      +(pmBusy?'<button class="btn" id="pmStop">Stop</button>':'')
+      +(pu?'<a class="btn" href="'+esc(pu)+'" target="_blank" rel="noopener noreferrer">Open prep doc<span class="out">\u2197</span></a>':'')
+      +(needCode?'<label class="fl">Access code<input id="pmCode" type="password" autocomplete="off" placeholder="from your coach" aria-label="Team access code"></label>':'')
+      +'<span class="hint" style="margin-left:auto">'+(SAMPLE?'Runs on your own Claude usage':needKey?'Billed to your own API key':'Runs on the team’s Claude account')+'</span></div>'
+      +(needKey?'<div class="row"><label class="fl" style="flex:1 1 260px">Your Anthropic API key'
+        +'<input id="pmKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" aria-label="Your Anthropic API key"></label>'
+        +(haveKey?'<button class="btn" id="pmForget" style="align-self:end">Forget key</button>':'')+'</div>'
+        +'<p class="hint">Each brief costs a few cents on your own account. Get a key at '
+        +'<a class="inline" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>'
+        +' and set a spend limit there. The key stays in this browser and is only sent to make your request; it is never saved on the server.</p>':'')
+      +'</div>'
+      +'<div class="panel pad" id="pmPanel"'+((pmText||pmBusy||pmNote)?"":" hidden")+' style="display:flex;flex-direction:column;gap:10px">'
+      +'<div id="pmOut" class="out-text"></div>'
+      +'<div class="row"><button class="btn" id="pmCopy">Copy</button><span class="hint" id="pmNote"></span></div></div>';
+    $("pmIn").value=S.prepMotion||"";
+    if(needCode)$("pmCode").value=getCode();
+    if(needKey)$("pmKey").value=getStored(UKEY);
+    $("pmOut").textContent=(pmBusy&&!pmText)?"Thinking\u2026":pmText;
+    $("pmNote").textContent=pmNote||"";
+  }
+
+  /* ---------- speech timer ---------- */
+  var TPRESETS=[
+    ["8 minute speech",[60,420,480],495],
+    ["7 minute speech",[60,360,420],435],
+    ["5 minute speech",[60,240,300],315],
+    ["4 minute reply",[240],255]
+  ];
+  var T={on:false,t0:0,base:0,last:0,iv:null,ac:null,muted:false,wake:null,flash:0};
+  function tcfg(){
+    var c=S.timer;
+    if(!c||!Array.isArray(c.bells)||!c.bells.length)c={bells:[60,420,480],cont:495};
+    return c;
+  }
+  function mmss(sec){
+    var n=Math.max(0,Math.floor(sec)),m=Math.floor(n/60),s=n%60;
+    return m+":"+(s<10?"0":"")+s;
+  }
+  function parseT(txt){ /* 8:15, 8.15 and 495 all mean the same thing */
+    var v=String(txt).trim().replace(".",":");
+    if(!v)return null;
+    if(v.indexOf(":")<0){var n=parseInt(v,10);return isNaN(n)?null:n*60}
+    var p=v.split(":"),m=parseInt(p[0],10),s=parseInt(p[1],10);
+    if(isNaN(m)||isNaN(s))return null;
+    return m*60+s;
+  }
+  function elapsed(){return T.on?(T.base+(Date.now()-T.t0)/1000):T.base}
+  function audio(){
+    if(T.ac)return T.ac;
+    var C=window.AudioContext||window.webkitAudioContext;
+    if(!C)return null;
+    try{T.ac=new C()}catch(e){T.ac=null}
+    return T.ac;
+  }
+  function ping(at,freq){
+    var ac=T.ac;if(!ac)return;
+    try{
+      var o=ac.createOscillator(),g=ac.createGain();
+      o.type="triangle";o.frequency.setValueAtTime(freq||880,at);
+      g.gain.setValueAtTime(0.0001,at);
+      g.gain.exponentialRampToValueAtTime(0.4,at+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001,at+0.5);
+      o.connect(g);g.connect(ac.destination);o.start(at);o.stop(at+0.55);
+    }catch(e){}
+  }
+  function bell(n){
+    T.flash=Date.now();
+    if(T.muted)return;
+    var ac=audio();if(!ac)return;
+    if(ac.state==="suspended"){try{ac.resume()}catch(e){}}
+    for(var i=0;i<n;i++)ping(ac.currentTime+i*0.24,i&&n>1?780:880);
+  }
+  function tick(){
+    var c=tcfg(),now=elapsed(),prev=T.last;T.last=now;
+    c.bells.forEach(function(b,i){
+      if(prev<b&&now>=b)bell(i===c.bells.length-1?2:1);
+    });
+    if(c.cont&&now>=c.cont){
+      var k=Math.floor((now-c.cont)/2),pk=Math.floor((prev-c.cont)/2);
+      if(prev<c.cont||k>pk)bell(1);
+    }
+    paintTimer();
+  }
+  function startT(){
+    if(T.on)return;
+    audio();
+    T.on=true;T.t0=Date.now();T.last=T.base;
+    if(T.iv)clearInterval(T.iv);
+    T.iv=setInterval(tick,100);
+    if(navigator.wakeLock&&navigator.wakeLock.request){
+      try{navigator.wakeLock.request("screen").then(function(w){T.wake=w},function(){})}catch(e){}
+    }
+    renderTimer();
+  }
+  function pauseT(){
+    if(!T.on)return;
+    T.base=elapsed();T.on=false;
+    if(T.iv){clearInterval(T.iv);T.iv=null}
+    if(T.wake){try{T.wake.release()}catch(e){}T.wake=null}
+    renderTimer();
+  }
+  function resetT(){
+    T.on=false;T.base=0;T.last=0;
+    if(T.iv){clearInterval(T.iv);T.iv=null}
+    if(T.wake){try{T.wake.release()}catch(e){}T.wake=null}
+    renderTimer();
+  }
+  function tstate(now){
+    var c=tcfg(),b=c.bells;
+    if(c.cont&&now>=c.cont)return["over","Over time"];
+    if(b.length>=3){
+      if(now<b[0])return["shut","Protected \u00b7 no POIs"];
+      if(now<b[1])return["open","POIs open"];
+      if(now<b[2])return["shut","Protected \u00b7 no POIs"];
+      return["over","Time up"];
+    }
+    if(now<b[b.length-1])return["","Running"];
+    return["over","Time up"];
+  }
+  function paintTimer(){
+    var d=$("tmDisp");if(!d)return;
+    var c=tcfg(),now=elapsed(),st=tstate(now);
+    d.textContent=mmss(now);
+    d.className="clock"+(st[0]==="over"?" over":"")+((Date.now()-T.flash<400)?" ring":"");
+    var s2=$("tmState");if(s2){s2.textContent=st[1];s2.className="tstate "+st[0]}
+    var span=Math.max(c.cont||0,c.bells[c.bells.length-1])*1.12;
+    var f=$("tmFill");if(f)f.style.width=Math.min(100,now/span*100)+"%";
+  }
+  function renderTimer(){
+    var c=tcfg(),now=elapsed(),st=tstate(now);
+    var span=Math.max(c.cont||0,c.bells[c.bells.length-1])*1.12;
+    var prot="",ticks="",labels="";
+    if(c.bells.length>=3){
+      prot='<div class="prot" style="left:0;width:'+(c.bells[0]/span*100)+'%"></div>'
+        +'<div class="prot" style="left:'+(c.bells[1]/span*100)+'%;width:'+((c.bells[2]-c.bells[1])/span*100)+'%"></div>';
+    }
+    c.bells.forEach(function(b){
+      ticks+='<div class="tick" style="left:'+(b/span*100)+'%"></div>';
+      labels+='<span style="left:'+(b/span*100)+'%">'+mmss(b)+'</span>';
+    });
+    if(c.cont){
+      ticks+='<div class="tick" style="left:'+(c.cont/span*100)+'%;background:var(--bad);opacity:.8"></div>';
+      labels+='<span class="cont" style="left:'+(c.cont/span*100)+'%;color:var(--bad)">'+mmss(c.cont)+' non-stop</span>';
+    }
+    $("v-timer").innerHTML='<div class="sec-head"><h2>Speech timer</h2><p>Tap the clock to start or stop. Bells ring on their own, and keep ringing once you are over.</p></div>'
+      +'<div class="panel tbig">'
+      +'<button id="tmDisp" class="clock" style="width:100%;border:0;background:transparent;cursor:pointer" aria-label="Start or stop the timer">'+mmss(now)+'</button>'
+      +'<div id="tmState" class="tstate '+st[0]+'">'+st[1]+'</div>'
+      +'<div class="track">'+prot+'<div class="fill" id="tmFill" style="width:'+Math.min(100,now/span*100)+'%"></div>'+ticks+'</div>'
+      +'<div class="tlabels">'+labels+'</div>'
+      +'<div class="row" style="justify-content:center;margin-top:14px">'
+      +'<button class="btn primary tbtn" id="tmGo">'+(T.on?"Pause":(now>0?"Resume":"Start"))+'</button>'
+      +'<button class="btn tbtn" id="tmReset">Reset</button>'
+      +'<button class="btn" id="tmMute">'+(T.muted?"Unmute":"Mute")+'</button></div></div>'
+      +'<div class="chips">'+TPRESETS.map(function(x){
+          var on=x[1].join(",")===c.bells.join(",")&&x[2]===c.cont;
+          return'<button class="chip" data-tp="'+esc(x[0])+'" aria-pressed="'+on+'">'+esc(x[0])+'</button>'}).join("")+'</div>'
+      +'<div class="panel pad" style="display:flex;flex-direction:column;gap:10px"><h3>Bells</h3>'
+      +'<div class="detg"><label class="fl">Ring at<input id="tmBells" value="'+esc(c.bells.map(mmss).join(", "))+'" aria-label="Bell times"></label>'
+      +'<label class="fl">Then non-stop from<input id="tmCont" value="'+esc(c.cont?mmss(c.cont):"")+'" placeholder="none" aria-label="Continuous bell from"></label></div>'
+      +'<p class="hint">Times as m:ss, separated by commas. The last bell rings twice. With three bells the first and last stretches are shaded as protected time.</p></div>';
+    paintTimer();
+  }
+
+  /* ---------- speakers ---------- */
+  function renderSpeakers(){
+    var el=$("v-speakers"),w=W();
+    if(!w){el.innerHTML=needFolder();return}
+    if(waiting(w)){el.innerHTML='<div class="panel empty">Loading the shared folder…</div>';return}
+    var sp=w.speakers.map(function(s,i){return'<tr><td><span class="dot" style="background:'+colorOf(i)+'"></span></td>'
+      +'<td><input class="field" data-sn="'+s.id+'" value="'+esc(s.name)+'" aria-label="Speaker name" style="width:100%;min-width:130px"'+dis()+'></td>'
+      +'<td class="n"><input class="field" data-st="'+s.id+'" inputmode="decimal" value="'+(s.target?fmt(s.target):"")+'" placeholder="none" aria-label="Target average" style="width:90px;text-align:right;font-family:var(--f-mono)"'+dis()+'></td>'
+      +'<td><input class="field" data-su="'+s.id+'" type="url" value="'+esc(s.url||"")+'" placeholder="https://…" aria-label="'+esc(s.name)+' profile link" style="width:100%;min-width:220px"'+dis()+'></td>'
+      +'<td>'+(ro()?'':'<button class="rowbtn x" data-delsp="'+s.id+'" title="Remove speaker" aria-label="Remove speaker">×</button>')+'</td></tr>'}).join("");
+    el.innerHTML='<div class="sec-head"><h2>Speakers</h2><p>In folder “'+esc(w.name)+'”. Targets use the scale selected at the top.</p></div>'+banner()
+      +(sp?'<div class="panel scroll"><table><thead><tr><th></th><th>Name</th><th class="n">Target avg</th><th>Profile link</th><th></th></tr></thead><tbody>'+sp+'</tbody></table></div>':'<div class="panel empty"><b>No speakers yet.</b><br>Add the first one below.</div>')
+      +'<p class="hint">A profile link turns the speaker’s name on the leaderboard into a link. Find each debater’s page on the '
+      +'<a class="inline" href="https://atomoslk.onrender.com/leaderboards.html" target="_blank" rel="noopener noreferrer">Atomos leaderboards</a> and paste the address here.</p>'
+      +(ro()?'<p class="hint">Adding speakers is switched off because this shared folder is read-only for you.</p>'
+        :'<div class="row"><input class="field" id="newSp" placeholder="New speaker name" style="width:220px" aria-label="New speaker name"><button class="btn primary" id="addSp">Add speaker</button></div>');
+  }
+
+  /* ---------- events ---------- */
+  $("nav").addEventListener("click",function(e){var b=e.target.closest("[data-v]");if(!b)return;S.view=b.dataset.v;persist();view()});
+  $("scaleSw").addEventListener("click",function(e){var b=e.target.closest("[data-s]");if(!b)return;S.scale=b.dataset.s;persist();view()});
+
+  var root=document.querySelector("main");
+  function rOf(t,id){return t.rounds.filter(function(x){return x.id===id})[0]}
+  root.addEventListener("change",function(e){
+    var i=e.target,w=W(),t=(w&&w.tournaments.length)?curT():null;
+    if(i.name==="kind"){$("nfMe").hidden=(i.value!=="solo");return}
+    if(i.id==="brSel"){var c=$("brCustom");c.hidden=(i.value!=="__custom");if(!c.hidden)c.focus();return}
+    if(!t)return;
+    if(i.dataset.side){rOf(t,i.dataset.side).side=i.value;save();renderEntry();return}
+    if(i.dataset.result){rOf(t,i.dataset.result).result=i.value;save();renderEntry();return}
+    if(i.dataset.pos){var r=rOf(t,i.dataset.pos);r.pos=r.pos||{};
+      if(i.value)r.pos[i.dataset.sp]=i.value;else delete r.pos[i.dataset.sp];save();renderEntry();return}
+    if(i.dataset.tpos){if(i.value==="__mixed")return;
+      setTourPos(t,i.dataset.tpos,i.value);save();renderEntry();return}
+    if(i.dataset.hasrep){var r2x=rOf(t,i.dataset.hasrep);r2x.hasReply=i.checked;save();renderEntry();return}
+    if(i.id==="tFmt"){t.format=i.value;save();renderEntry();return}
+    if(i.id==="tDoc"){savePrep(w,t,i.value.trim());renderEntry();return}
+  });
+  root.addEventListener("input",function(e){
+    var i=e.target,w=W(),t=(w&&w.tournaments.length)?curT():null;
+    if(i.dataset.fn){var fw=FL().filter(function(x){return x.id===i.dataset.fn})[0];
+      if(fw){fw.name=i.value;if(fw._sh)syncF(fw);else persist();setCtx()}return}
+    if(i.dataset.r&&i.dataset.s&&t){
+      var p=parseCell(i.value);if(!p.bad)rOf(t,i.dataset.r).scores[i.dataset.s]=p.v;
+      flag(i);updateSums();save();return}
+    if(i.dataset.rp&&i.dataset.s&&t){
+      var r=rOf(t,i.dataset.rp),q=parseCell(i.value,true);r.replies=r.replies||{};
+      if(!q.bad){if(q.v==null)delete r.replies[i.dataset.s];else r.replies[i.dataset.s]=q.v}
+      flag(i);updateSums();save();return}
+    if(i.dataset.lbl&&t){var rr=rOf(t,i.dataset.lbl);rr.label=i.value;rr.short=null;save();return}
+    if(i.dataset.motion&&t){rOf(t,i.dataset.motion).motion=i.value;save();return}
+    if(i.dataset.tag&&t){rOf(t,i.dataset.tag).tag=i.value;save();return}
+    if(i.dataset.team&&t){t.teamRank=t.teamRank||{};t.teamRank[i.dataset.team]=i.value.replace(/[^0-9]/g,"");save();return}
+    if(i.id==="tName"&&t){t.name=i.value;save();return}
+    if(i.id==="tAvg"&&t){var s=i.value.trim();if(s===""){t.tabAvg=null}else{var n=parseFloat(s.replace(",","."));if(!isNaN(n))t.tabAvg=r2(fromDisp(n))}save();return}
+    if(i.id==="tField"&&t){var v=i.value.replace(/[^0-9]/g,"");t.fieldSize=v?Number(v):null;save();return}
+    if(i.id==="tTeam"&&t){t.teamPos=i.value.replace(/[^0-9]/g,"");save();return}
+    if(i.id==="tDoc"&&t){savePrep(w,t,i.value.trim());return}
+    if(i.dataset.sn){w.speakers.filter(function(x){return x.id===i.dataset.sn})[0].name=i.value;save();return}
+    if(i.dataset.su){var su=w.speakers.filter(function(x){return x.id===i.dataset.su})[0];
+      if(su){su.url=i.value.trim();save()}return}
+    if(i.dataset.st){var sp=w.speakers.filter(function(x){return x.id===i.dataset.st})[0],s2=i.value.trim();
+      if(s2===""){sp.target=null}else{var n2=parseFloat(s2.replace(",","."));if(!isNaN(n2))sp.target=r2(fromDisp(n2))}
+      save();return}
+    if(i.id==="pmIn"){S.prepMotion=i.value;persist();return}
+    if(i.id==="pmCode"){setCode(i.value.trim());return}
+    if(i.id==="pmKey"){setStored(UKEY,i.value.trim());return}
+    if(i.id==="tmBells"){
+      var list=i.value.split(",").map(parseT).filter(function(x){return x!=null&&x>0});
+      if(list.length){list.sort(function(a,b2){return a-b2});S.timer={bells:list,cont:tcfg().cont};persist();T.last=elapsed()}
+      return}
+    if(i.id==="tmCont"){var cv=parseT(i.value);S.timer={bells:tcfg().bells,cont:cv||0};persist();T.last=elapsed();return}
+  });
+  root.addEventListener("keydown",function(e){
+    if(e.key!=="Enter")return;var i=e.target;
+    if(i.classList.contains("grid-in")&&i.dataset.s){
+      e.preventDefault();var col=Array.prototype.slice.call(document.querySelectorAll('#v-entry .grid-in[data-s="'+i.dataset.s+'"]'));
+      var nx=col[col.indexOf(i)+1];if(nx){nx.focus();nx.select()}}
+    if(i.id==="tDoc"){e.preventDefault();i.blur();return}
+    if(i.id==="newSp")$("addSp").click();
+    if(i.id==="brCustom")$("addBr").click();
+    if(i.id==="nfName"||i.id==="nfMe")$("mkFolder").click();
+  });
+  var armed;
+  function arm(b,key,idle,ask){
+    if(armed===key)return true;
+    armed=key;b.textContent=ask;b.classList.add("armed");
+    setTimeout(function(){if(armed===key)armed=null;if(b.isConnected){b.textContent=idle;b.classList.remove("armed")}},3000);
+    return false;
+  }
+  root.addEventListener("click",function(e){
+    try{onClick(e)}catch(err){toast("That didn't work: "+((err&&err.message)||err));}
+  });
+  function onClick(e){
+    var b=e.target.closest("button");if(!b)return;var w=W();
+    /* folders */
+    if(b.dataset.open){S.curWs=b.dataset.open;S.view="overview";persist();
+      var ow=W();if(ow&&ow._sh){subT(ow);subPrep(ow)}
+      view();return}
+    if(b.dataset.share){var lw=S.ws.filter(function(x){return x.id===b.dataset.share})[0];
+      if(lw)shareFolder(lw);return}
+    if(b.dataset.code){var f=S.ws.filter(function(x){return x.id===b.dataset.code})[0];
+      var code=JSON.stringify({speaksheet:1,folder:f});
+      var tmp=document.createElement("textarea");tmp.value=code;tmp.style.position="fixed";tmp.style.opacity="0";document.body.appendChild(tmp);tmp.select();
+      (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(code):Promise.reject()).then(function(){toast("Folder code copied")},function(){toast("Could not copy on this browser")});
+      setTimeout(function(){document.body.removeChild(tmp)},0);return}
+    if(b.dataset.delf){if(!arm(b,"f"+b.dataset.delf,"Delete","Click again to delete"))return;
+      var id=b.dataset.delf,sw=SH.filter(function(x){return x.id===id})[0];
+      if(sw){dropF(sw);if(subs[id]){subs[id]();delete subs[id]}SH=SH.filter(function(x){return x.id!==id})}
+      S.ws=S.ws.filter(function(x){return x.id!==id});
+      if(S.curWs===id)S.curWs=null;armed=null;persist();view();toast("Folder deleted");return}
+    if(b.id==="mkFolder"){
+      var kindEl=document.querySelector('input[name="kind"]:checked');
+      var nm=$("nfName").value.trim(),kind=kindEl?kindEl.value:"team",me=($("nfMe")?$("nfMe").value:"").trim();
+      var whereEl=document.querySelector('input[name="where"]:checked'),shared=!!(DB&&whereEl&&whereEl.value==="shared");
+      if(!nm){$("nfName").focus();return}
+      if(kind==="solo"&&!me){$("nfMe").focus();return}
+      if(shared){
+        var nw={id:uid(),_sh:true,name:nm,kind:kind,speakers:kind==="solo"?[{id:uid(),name:me,target:null}]:[],
+          tournaments:[],cur:null,loaded:true,ord:Date.now()};
+        SH.push(nw);S.curWs=nw.id;freshF[nw.id]=true;subT(nw);subPrep(nw);
+        put("folders/"+nw.id,fBody(nw)).then(function(){delete freshF[nw.id]},dbErr);
+      } else newFolder(nm,kind,kind==="solo"?me:null);
+      S.view=kind==="solo"?"entry":"speakers";persist();view();
+      toast(shared?"Shared folder created":"Folder created");return}
+    if(b.id==="fcAdd"){
+      try{var o=JSON.parse($("fcIn").value);var f2=o&&o.folder?o.folder:o;if(!validFolder(f2))throw 0;
+        f2.id=uid();f2.kind=f2.kind==="solo"?"solo":"team";f2.cur=null;
+        (f2.tournaments||[]).forEach(fixT);
+        S.ws.push(f2);S.curWs=f2.id;save();view();toast("Folder added")}
+      catch(err){$("fcMsg").textContent="That is not a folder code."}return}
+    if(b.id==="wipe"){if(!arm(b,"wipe","Erase the folders on this device","Click again to erase everything"))return;
+      var localIds=S.ws.map(function(x){return x.id});
+      S.ws=[];if(localIds.indexOf(S.curWs)>=0)S.curWs=null;
+      armed=null;persist();view();toast("Cleared");return}
+    /* tournaments and rounds */
+    if(b.dataset.t&&w){w.cur=b.dataset.t;openDet={};persist();view();return}
+    if(b.id==="addT"&&w){
+      var nt={id:uid(),name:"Tournament "+(w.tournaments.length+1),format:"ap",teamRank:{},tabAvg:null,fieldSize:null,
+        ord:Date.now(),rounds:[{id:uid(),stage:"prelim",label:"Round 1",scores:{},replies:{},pos:{}}]};
+      w.tournaments.push(nt);w.cur=nt.id;
+      if(w._sh){freshT[nt.id]=true;syncF(w);syncT(w,nt,true)}
+      save();view();var f3=$("tName");if(f3){f3.focus();f3.select()}return}
+    var t=(w&&w.tournaments.length)?curT():null;
+    if(b.id==="addR"&&t){t.rounds.push(mkRound(t,"prelim","Round "+(inGroup(t,"prelim").length+1)));save();view();return}
+    if(b.id==="addBr"&&t){
+      var sel=$("brSel").value,name,sh=null;
+      if(sel==="__custom"){name=$("brCustom").value.trim();if(!name){$("brCustom").focus();return}}
+      else{name=sel;BREAKS.forEach(function(x){if(x[0]===sel)sh=x[1]})}
+      var nr=mkRound(t,"break",name);nr.short=sh;t.rounds.push(nr);save();view();return}
+    if(b.id==="addSpar"&&t){t.rounds.push(mkRound(t,"spar","Spar"));save();view();return}
+    if(b.dataset.det&&t){openDet[b.dataset.det]=!openDet[b.dataset.det];
+      var dr=document.querySelector('#v-entry tr.det[data-for="'+b.dataset.det+'"]');
+      if(dr){dr.hidden=!openDet[b.dataset.det];b.classList.toggle("on",openDet[b.dataset.det])}return}
+    if(b.dataset.up&&t){moveRound(t,b.dataset.up,-1);save();view();return}
+    if(b.dataset.down&&t){moveRound(t,b.dataset.down,1);save();view();return}
+    if(b.dataset.del&&t){t.rounds=t.rounds.filter(function(r){return r.id!==b.dataset.del});delete openDet[b.dataset.del];save();view();return}
+    if(b.id==="delT"&&t){if(!arm(b,"t","Delete tournament","Click again to delete"))return;
+      clearTimeout(wq[t.id]);dirtyT[t.id]=false;dropT(w,t);
+      w.tournaments=w.tournaments.filter(function(x){return x.id!==t.id});w.cur=null;armed=null;save();view();toast("Tournament deleted");return}
+    /* speakers */
+    if(b.id==="addSp"&&w){var inp=$("newSp"),n3=inp.value.trim();if(!n3){inp.focus();return}w.speakers.push({id:uid(),name:n3,target:null});save();view();$("newSp").focus();return}
+    if(b.dataset.delsp&&w){
+      if(armed!=="s"+b.dataset.delsp){armed="s"+b.dataset.delsp;b.textContent="Sure?";b.style.color="var(--bad)";
+        setTimeout(function(){armed=null;if(b.isConnected){b.textContent="×";b.style.color=""}},3000);return}
+      w.speakers=w.speakers.filter(function(x){return x.id!==b.dataset.delsp});armed=null;save();view();toast("Speaker removed");return}
+    /* timer */
+    if(b.id==="tmGo"||b.id==="tmDisp"){T.on?pauseT():startT();return}
+    if(b.id==="tmReset"){resetT();return}
+    if(b.id==="tmMute"){T.muted=!T.muted;renderTimer();return}
+    if(b.dataset.tp){
+      TPRESETS.forEach(function(x){if(x[0]===b.dataset.tp)S.timer={bells:x[1].slice(),cont:x[2]}});
+      persist();resetT();return}
+    /* motion prep */
+    if(b.id==="pmGo"){
+      var mo=($("pmIn").value||"").trim();if(!mo){$("pmIn").focus();return}
+      S.prepMotion=mo;S.prepFmt=$("pmFmt").value;persist();runPrep(mo,S.prepFmt);return}
+    if(b.id==="pmStop"){if(pmCtl)pmCtl.abort();return}
+    if(b.id==="pmForget"){setStored(UKEY,"");renderPrep();toast("Key removed from this browser");return}
+    if(b.id==="pmCopy"){copyText(pmText||"");return}
+    if(b.dataset.tagai&&t&&sampleOk()){
+      var tr=rOf(t,b.dataset.tagai);
+      if(!tr||!(tr.motion||"").trim()){toast("Add the motion first");return}
+      if(b.disabled)return;
+      b.disabled=true;b.textContent="\u2026";
+      askTheme(tr.motion)
+        .then(function(dj){
+          var th=(dj&&typeof dj.theme==="string")?dj.theme:"";
+          var hit=TAGS.filter(function(x){return x.toLowerCase()===th.toLowerCase()})[0];
+          if(hit){tr.tag=hit;save();renderEntry();toast("Theme set to "+hit)}
+          else{toast("No clear theme came back");b.disabled=false;b.textContent="Suggest"}
+        },function(e){
+          var c=e&&e.code;
+          if(sampleGone(c)){sampleDead=true;renderEntry();return}
+          toast(sampleCopy(c));b.disabled=false;b.textContent="Suggest";
+        });
+      return}
+  }
+  function mkRound(t,stage,label){ /* carry over the positions from the round before, since the order rarely changes */
+    var prev=inGroup(t,stage).slice(-1)[0]||sorted(t).slice(-1)[0],pos={},hasReply=false;
+    if(prev){Object.keys(prev.pos||{}).forEach(function(k){pos[k]=prev.pos[k]});hasReply=!!prev.hasReply}
+    return{id:uid(),stage:stage,label:label,scores:{},replies:{},pos:pos,hasReply:hasReply};
+  }
+
+  view();
+})();
+</script>
